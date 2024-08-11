@@ -1,13 +1,7 @@
-<?php
-require_once("../services/config.php");
-session_start();
-
-?>
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta content="Codescandy" name="author">
-<link rel="shortcut icon" type="image/x-icon" href="../assets/images/sapi only.png" />
+<link rel="shortcut icon" type="image/x-icon" href="/assets/images/logo_sapi.png" />
 <!-- <link rel="stylesheet" href="../assets/css/style.css"> -->
 
 <!-- Bootstrap mdb -->
