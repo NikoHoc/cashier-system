@@ -20,10 +20,33 @@ if (isset($_POST['login'])) {
     $admin = $select_admin->fetch_assoc();
 
     $_SESSION['is_login'] = true;
-    $_SESSION['username'] = $admin['username'];
+    $_SESSION['username'] = $admin['email_admin'];
 
-    header("location: index.php");
+    echo "<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Login successful.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(function() {
+                    window.location = 'index.php';
+                });
+            });
+        </script>";
+
+    // header("location: index.php");
   } else {
+    echo "<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Invalid username or password.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+  </script>";
     $login_notification = "Invalid email or password.";
   }
 }
@@ -81,16 +104,7 @@ if (isset($_POST['login'])) {
     </div>
   </div>
 
-  <!-- FontAwesome for Icons -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <!-- Bootstrap JS and Popper.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-
+  <?php include "components/script.php"; ?>
 </body>
 
 </html>
