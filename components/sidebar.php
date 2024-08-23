@@ -25,14 +25,20 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </a>
     </li>
     <li class="sidebar-item">
-        <a href="menu.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'menu.php') ? 'active' : ''; ?>">
-            <i class="lni lni-agenda"></i>
-            <span>Menu</span>
+        <a href="kategori.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'kategori.php') ? 'active' : ''; ?>">
+            <i class="lni lni-layers"></i>
+            <span>Kategori</span>
         </a>
     </li>
     <li class="sidebar-item">
-        <a href="riwayat.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'riwayat.php') ? 'active' : ''; ?>">
+        <a href="menu.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'menu.php') ? 'active' : ''; ?>">
             <i class="lni lni-library"></i>
+            <span>Menu</span>
+        </a>
+    </li> 
+    <li class="sidebar-item">
+        <a href="riwayat.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'riwayat.php') ? 'active' : ''; ?>">
+            <i class="lni lni-database"></i>
             <span>Riwayat Penjualan</span>
         </a>
     </li>
