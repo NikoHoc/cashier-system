@@ -1,5 +1,5 @@
 <?php
-require_once("../config.php");
+require_once("../../config/database.php");
 
 function addKategori($db, $nama_kategori) {
     $stmt = $db->prepare("INSERT INTO kategori (nama_kategori) VALUES (?)");

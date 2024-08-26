@@ -1,5 +1,5 @@
 <?php
-require_once("./services/config.php");
+require_once("./config/database.php");
 session_start();
 
 if ($_SESSION['is_login'] == false) {
@@ -58,7 +58,7 @@ if (!empty($kategori_filter)) {
 <html lang="en">
 
 <head>
-    <?php include "components/link.php"; ?>
+    <?php include "includes/head.php"; ?>
     <style>
         /* untuk button edit delete dalam tabel */
         @media (max-width: 1340px) {
@@ -75,13 +75,13 @@ if (!empty($kategori_filter)) {
     <div class="wrapper">
         <aside id="sidebar">
             <!-- Sidebar -->
-            <?php include "components/sidebar.php"; ?>
+            <?php include "includes/sidebar.php"; ?>
             <!-- Sidebar -->
         </aside>
 
         <div class="main">
             <!-- Navbar -->
-            <?php include "components/navbar.php"; ?>
+            <?php include "includes/navbar.php"; ?>
             <!-- Navbar -->
 
             <!-- Main Content -->
@@ -125,7 +125,7 @@ if (!empty($kategori_filter)) {
                                             <th scope="col">Nama Menu</th>
                                             <th scope="col">Harga</th>
                                             <th scope="col">Harga 1/2</th>
-                                 
+
                                         </tr>
                                     </thead>
                                     <tbody id="menu-body">
@@ -141,7 +141,7 @@ if (!empty($kategori_filter)) {
                                                     <td><?= $menu_item['nama_menu'] ?></td>
                                                     <td><?= $menu_item['harga_menu'] ?></td>
                                                     <td><?= ($menu_item['harga_setengah'] == NULL) ? '-' : $menu_item['harga_setengah'] ?></td>
-                                                    
+
                                                 </tr>
                                         <?php
                                             }
@@ -185,33 +185,128 @@ if (!empty($kategori_filter)) {
 
                         <!-- Start Right Side -->
                         <div class="col-lg-6">
-                            <h4>Tambah Menu</h4>
-                            <!-- Form Tambah Menu -->
-                            <form action="addMenu.php" method="POST">
-                                <div class="mb-3">
-                                    <label for="kategori" class="form-label">*Kategori</label>
-                                    <select class="form-select" id="kategori" name="kategori_id" required>
-                                        <option value="" disabled selected>Pilih kategori...</option>
-                                        <?php
-                                        foreach ($kategori as $kat) { ?>
-                                            <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
-                                        <?php } ?>
-                                    </select>
+                            <h4>Kelola Menu</h4>
+                            <!-- Navigation Tabs -->
+                            <ul class="nav nav-tabs" id="menuTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="add-tab" data-bs-toggle="tab" data-bs-target="#addMenu" type="button" role="tab" aria-controls="addMenu" aria-selected="true">Tambah</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#editMenu" type="button" role="tab" aria-controls="editMenu" aria-selected="false">Edit</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#deleteMenu" type="button" role="tab" aria-controls="deleteMenu" aria-selected="false">Delete</button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content" id="menuTabsContent">
+                                <!-- Tab for Adding Menu -->
+                                <div class="tab-pane fade show active" id="addMenu" role="tabpanel" aria-labelledby="add-tab">
+                                    <form action="addMenu.php" method="POST">
+                                        <!-- Same content as the existing Add Menu form -->
+                                        <div class="mb-3">
+                                            <label for="kategori" class="form-label">*Kategori</label>
+                                            <select class="form-select" id="kategori" name="kategori_id" required>
+                                                <option value="" disabled selected>Pilih kategori...</option>
+                                                <?php foreach ($kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="namaMenu" class="form-label">*Nama Menu</label>
+                                            <input type="text" class="form-control" id="namaMenu" name="nama_menu" required placeholder="Masukan Nama Menu">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="harga" class="form-label">*Harga</label>
+                                            <input type="number" class="form-control" id="harga" name="harga" required placeholder="Masukan Harga Menu">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="hargaSetengah" class="form-label">Harga 1/2 (Opsional)</label>
+                                            <input type="number" class="form-control" id="hargaSetengah" name="harga_setengah" placeholder="Masukan Harga 1/2 Menu">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Tambah</button>
+                                    </form>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="namaMenu" class="form-label">*Nama Menu</label>
-                                    <input type="text" class="form-control" id="namaMenu" name="nama_menu" required placeholder="Masukan Nama Menu">
+
+                                <!-- Tab for Editing Menu -->
+                                <div class="tab-pane fade" id="editMenu" role="tabpanel" aria-labelledby="edit-tab">
+                                    <form action="editMenu.php" method="POST">
+                                        <div class="mb-3">
+                                            <label for="kategoriEdit" class="form-label">*Kategori</label>
+                                            <select class="form-select" id="kategoriEdit" name="kategori_id_edit" required>
+                                                <option value="" disabled selected>Pilih kategori...</option>
+                                                <?php foreach ($kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="menuEditSelect" class="form-label">*Pilih Menu</label>
+                                            <select class="form-select" id="menuEditSelect" name="menu_id_edit" required>
+                                                <option value="" disabled selected>Pilih menu...</option>
+                                                <!-- Options will be populated via AJAX based on selected category -->
+                                            </select>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label for="namaMenu" class="form-label">Nama Menu</label>
+                                                <input type="text" class="form-control" id="namaMenu" name="nama_menu" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="editNamaMenu" class="form-label">Nama Menu Baru</label>
+                                                <input type="text" class="form-control" id="editNamaMenu" name="edit_nama_menu" required>
+                                            </div>
+
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label for="hargaMenu" class="form-label">Harga Menu</label>
+                                                <input type="text" class="form-control" id="hargaMenu" name="harga_menu" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="editHargaMenu" class="form-label">Harga Menu Baru</label>
+                                                <input type="text" class="form-control" id="editHargaMenu" name="edit_harga_menu" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <label for="hargaSetengah" class="form-label">Harga 1/2</label>
+                                                <input type="text" class="form-control" id="hargaSetengah" name="harga_setengah" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="editHargaSetengah" class="form-label">Harga 1/2 Baru</label>
+                                                <input type="text" class="form-control" id="editHargaSetengah" name="edit_harga_setengah" required>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Edit</button>
+                                    </form>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="harga" class="form-label">*Harga</label>
-                                    <input type="number" class="form-control" id="harga" name="harga" required placeholder="Masukan Harga Menu">
+
+                                <!-- Tab for Deleting Menu -->
+                                <div class="tab-pane fade" id="deleteMenu" role="tabpanel" aria-labelledby="delete-tab">
+                                    <form action="deleteMenu.php" method="POST">
+                                        <div class="mb-3">
+                                            <label for="kategoriDelete" class="form-label">*Kategori</label>
+                                            <select class="form-select" id="kategoriDelete" name="kategori_id_delete" required>
+                                                <option value="" disabled selected>Pilih kategori...</option>
+                                                <?php foreach ($kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="menuDeleteSelect" class="form-label">*Pilih Menu</label>
+                                            <select class="form-select" id="menuDeleteSelect" name="menu_id_delete" required>
+                                                <option value="" disabled selected>Pilih menu...</option>
+                                                <!-- Options will be populated via AJAX based on selected category -->
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                    </form>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="hargaSetengah" class="form-label">Harga 1/2 (Opsional)</label>
-                                    <input type="number" class="form-control" id="hargaSetengah" name="harga_setengah" placeholder="Masukan Harga 1/2 Menu">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Tambah</button>
-                            </form>
+                            </div>
                         </div>
                         <!-- End Right Side -->
                     </div>
@@ -276,7 +371,7 @@ if (!empty($kategori_filter)) {
         });
     </script>
 
-    <?php include "components/script.php"; ?>
+    <?php include "includes/script.php"; ?>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <?php
-require_once("./services/config.php");
+require_once("./config/database.php");
 session_start();
 
 $login_notification = "";
@@ -56,7 +56,7 @@ if (isset($_POST['login'])) {
 <html lang="en">
 
 <head>
-  <?php include "components/link.php"; ?>
+  <?php include "includes/head.php"; ?>
 </head>
 
 <body class="bg-light d-flex align-items-center vh-100">
@@ -104,7 +104,7 @@ if (isset($_POST['login'])) {
     </div>
   </div>
 
-  <?php include "components/script.php"; ?>
+  <?php include "includes/script.php"; ?>
 </body>
 
 </html>

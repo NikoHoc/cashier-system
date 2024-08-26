@@ -1,5 +1,5 @@
 <?php
-require_once("./services/config.php");
+require_once("./config/database.php");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $kategori_id = $_POST['kategori_id'];

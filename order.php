@@ -1,5 +1,5 @@
 <?php
-require_once("./services/config.php");
+require_once("./config/database.php");
 session_start();
 
 if ($_SESSION['is_login'] == false) {
@@ -12,20 +12,20 @@ if ($_SESSION['is_login'] == false) {
 <html lang="en">
 
 <head>
-  <?php include "components/link.php"; ?>
+  <?php include "includes/head.php"; ?>
 </head>
 
 <body>
   <div class="wrapper">
     <aside id="sidebar">
       <!-- Sidebar -->
-      <?php include "components/sidebar.php"; ?>
+      <?php include "includes/sidebar.php"; ?>
       <!-- Sidebar -->
     </aside>
 
     <div class="main">
       <!-- Navbar -->
-      <?php include "components/navbar.php"; ?>
+      <?php include "includes/navbar.php"; ?>
       <!-- Navbar -->
 
       <!-- Main Content -->
@@ -46,7 +46,7 @@ if ($_SESSION['is_login'] == false) {
 
 
 
-  <?php include "components/script.php"; ?>
+  <?php include "includes/script.php"; ?>
 </body>
 
 </html>

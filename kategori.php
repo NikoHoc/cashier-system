@@ -1,5 +1,5 @@
 <?php
-require_once("./services/config.php");
+require_once("./config/database.php");
 session_start();
 
 if ($_SESSION['is_login'] == false) {
@@ -29,11 +29,6 @@ $kategori = $db->query($kategori_query);
 ?>
 
 <?php
-//Search feature
-
-?>
-
-<?php
 // Notifikasi untuk insert,delete,update
 if (isset($_GET['status']) && isset($_GET['tipe'])) {
     $status = $_GET['status'];
@@ -45,7 +40,7 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
 <html lang="en">
 
 <head>
-    <?php include "components/link.php"; ?>
+    <?php include "includes/head.php"; ?>
     <style>
         @media (max-width: 1156px) {
             .btn-custom-spacing {
@@ -61,13 +56,13 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
     <div class="wrapper">
         <aside id="sidebar">
             <!-- Sidebar -->
-            <?php include "components/sidebar.php"; ?>
+            <?php include "includes/sidebar.php"; ?>
             <!-- Sidebar -->
         </aside>
 
         <div class="main">
             <!-- Navbar -->
-            <?php include "components/navbar.php"; ?>
+            <?php include "includes/navbar.php"; ?>
             <!-- Navbar -->
 
             <!-- Main Content -->
@@ -221,69 +216,45 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
         </div>
     </div>
 
-    <?php include "components/script.php"; ?>
+    <?php include "includes/script.php"; ?>
     <script>
-        // SweetAlert untuk konfirmasi tambah kategori
-        document.querySelector('#formTambah').addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah form submit langsung
-
-            Swal.fire({
-                title: 'Konfirmasi Tambah',
-                text: "Apakah Anda yakin ingin menambahkan kategori ini?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Tambah!',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.target.submit(); // Submit form jika dikonfirmasi
-                }
-            });
-        });
-
-        // SweetAlert untuk konfirmasi edit kategori
-        document.querySelector('#formEdit').addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah form submit langsung
-
-            Swal.fire({
-                title: 'Konfirmasi Edit',
-                text: "Apakah Anda yakin ingin menggubah kategori ini?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Ubah!',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.target.submit(); // Submit form jika dikonfirmasi
-                }
-            });
-        });
-
-        // SweetAlert untuk konfirmasi delete kategori
-        document.querySelector('#formDelete').addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah form submit langsung
-
-            Swal.fire({
-                title: 'Konfirmasi Hapus',
-                text: "Apakah Anda yakin ingin menghapus kategori ini?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Hapus!',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.target.submit(); // Submit form jika dikonfirmasi
-                }
-            });
-        });
-
         document.addEventListener("DOMContentLoaded", function() {
+            // Generic SweetAlert confirmation function
+            function confirmAction(e, actionType, message, formId) {
+                e.preventDefault(); // Prevent the form from submitting immediately
+
+                Swal.fire({
+                    title: `Konfirmasi ${actionType}`,
+                    text: message,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: `Ya, ${actionType}!`,
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.querySelector(formId).submit(); // Submit the form if confirmed
+                    }
+                });
+            }
+
+            // Event listener for the Tambah form
+            document.querySelector('#formTambah').addEventListener('submit', function(e) {
+                confirmAction(e, 'Tambah', 'Apakah Anda yakin ingin menambahkan kategori ini?', '#formTambah');
+            });
+
+            // Event listener for the Edit form
+            document.querySelector('#formEdit').addEventListener('submit', function(e) {
+                confirmAction(e, 'Edit', 'Apakah Anda yakin ingin mengubah kategori ini?', '#formEdit');
+            });
+
+            // Event listener for the Delete form
+            document.querySelector('#formDelete').addEventListener('submit', function(e) {
+                confirmAction(e, 'Hapus', 'Apakah Anda yakin ingin menghapus kategori ini?', '#formDelete');
+            });
+
+            // Notification after form submission
             let status = "<?= isset($_GET['status']) ? $_GET['status'] : '' ?>";
             let tipe = "<?= isset($_GET['tipe']) ? $_GET['tipe'] : '' ?>";
             let message = '';
@@ -305,16 +276,15 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                     title: 'Berhasil!',
                     text: message
                 });
-            } else if (status !== '') { // Jika status tidak kosong dan bukan success, berarti gagal
+            } else if (status !== '') { // If status is not empty and not success, then it's a failure
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',
                     text: 'Terjadi kesalahan!'
                 });
             }
-        });
 
-        document.addEventListener("DOMContentLoaded", function() {
+            // Other event listeners and functions
             const searchInput = document.querySelector('#menu-search');
             const kategoriBody = document.querySelector('#kategori-body');
             const pagination = document.querySelector('.pagination');
@@ -330,12 +300,12 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                         if (data.length > 0) {
                             data.forEach((kat, index) => {
                                 kategoriBody.innerHTML += `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${kat.id_kategori}</td>
-                                    <td>${kat.nama_kategori}</td>
-                                </tr>
-                            `;
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${kat.id_kategori}</td>
+                            <td>${kat.nama_kategori}</td>
+                        </tr>
+                    `;
                             });
                         } else {
                             kategoriBody.innerHTML = "<tr><td colspan='3' class='text-center'>Kategori tidak ditemukan! Tambah kategori baru dulu!</td></tr>";
