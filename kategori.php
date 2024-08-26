@@ -6,40 +6,38 @@ if ($_SESSION['is_login'] == false) {
     header("location: login.php");
 }
 
-// Jumlah data per halaman
-$per_page = 5;
+$kategori_query = "SELECT * FROM kategori";
+$list_kategori = $db->query($kategori_query);
+?>
 
-// Data kategori
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+<?php
+// Pagination tabel
+$limit = 5;
+// Dapatkan halaman saat ini
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
-if ($search) {
-    // Jika ada pencarian
-    $kategori_query = $db->prepare("SELECT * FROM kategori WHERE nama_kategori LIKE ?");
-    $search_param = "%" . $search . "%";
-    $kategori_query->bind_param("s", $search_param);
-    $kategori_query->execute();
-    $result = $kategori_query->get_result();
-} else {
-    // Jika tidak ada pencarian
-    $kategori_query = $db->query("SELECT * FROM kategori");
-    $result = $kategori_query;
-}
+// Hitung total data
+$total_query = "SELECT COUNT(*) as total FROM kategori";
+$total_result = $db->query($total_query);
+$total_data = $total_result->fetch_assoc()['total'];
+$total_pages = ceil($total_data / $limit);
 
-$total_data = $result->num_rows;
-$total_pages = ceil($total_data / $per_page);
+// Query untuk mendapatkan data sesuai halaman
+$kategori_query = "SELECT * FROM kategori LIMIT $limit OFFSET $offset";
+$kategori = $db->query($kategori_query);
+?>
 
-$kategori_page = isset($_GET['kategori_page']) ? $_GET['kategori_page'] : 1;
-$start = ($kategori_page - 1) * $per_page;
+<?php
+//Search feature
 
-// Jika ada pencarian, lakukan pencarian dengan limit
-if ($search) {
-    $kategori_query_pagination = $db->prepare("SELECT * FROM kategori WHERE nama_kategori LIKE ? LIMIT ?, ?");
-    $kategori_query_pagination->bind_param("sii", $search_param, $start, $per_page);
-    $kategori_query_pagination->execute();
-    $kategori_pagination = $kategori_query_pagination->get_result();
-} else {
-    $kategori_query_pagination = $db->query("SELECT * FROM kategori LIMIT $start, $per_page");
-    $kategori_pagination = $kategori_query_pagination;
+?>
+
+<?php
+// Notifikasi untuk insert,delete,update
+if (isset($_GET['status']) && isset($_GET['tipe'])) {
+    $status = $_GET['status'];
+    $tipe = $_GET['tipe'];
 }
 ?>
 
@@ -78,13 +76,13 @@ if ($search) {
                     <div class="row">
                         <!-- Daftar tabel Kategori -->
                         <div class="col-lg-6 ">
-                            <div class="row mb-2">
-                                <div class="col-md-6">
+                            <div class="row mb-3">
+                                <div class="col-md-6 col-sm-6 ">
                                     <h4>List Kategori</h4>
                                 </div>
-                                <div class="col-md-6 d-flex justify-content-end">
-                                    <div class="input-group" style="max-width: 25rem;">
-                                        <input class="form-control" id="menu-search" placeholder="Cari kategori..." oninput="searchKategori(this.value)">
+                                <div class="col-md-6 col-sm-6 justify-content-end">
+                                    <div class="input-group">
+                                        <input class="form-control" id="menu-search" placeholder="Cari kategori...">
                                         <span class="input-group-text bg-light">
                                             <i class="fas fa-search"></i>
                                         </span>
@@ -98,70 +96,126 @@ if ($search) {
                                             <th scope="col">No</th>
                                             <th scope="col">ID Kategori</th>
                                             <th scope="col">Nama kategori</th>
-                                            <th scope="col">Aksi</th>
+
                                         </tr>
                                     </thead>
                                     <tbody id="kategori-body">
-                                        <?php if ($total_data > 0) {
-                                            $no = $start + 1; // Update no urut
-                                            foreach ($kategori_pagination as $kat) { ?>
+                                        <?php
+                                        if ($total_data == 0) {
+                                            echo "<tr><td colspan='3' class='text-center'>Belum ada kategori! Tambah kategori baru dulu!</td></tr>";
+                                        } else {
+                                            $no = $offset + 1;
+                                            foreach ($kategori as $kat) { ?>
                                                 <tr>
                                                     <td><?= $no++ ?></td>
                                                     <td><?= $kat['id_kategori'] ?></td>
                                                     <td><?= $kat['nama_kategori'] ?></td>
-                                                    <td>
-                                                        <a href="editKategori.php?id=<?= $kat['id_kategori'] ?>" class="btn btn-warning btn-sm btn-custom-spacing">Edit</a>
-                                                        <a href="deleteKategori.php?id=<?= $kat['id_kategori'] ?>" class="btn btn-danger btn-sm btn-custom-spacing" onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">Delete</a>
-                                                    </td>
                                                 </tr>
                                         <?php }
                                         } ?>
-                                        <tr id="kategori-not-found-row" style="display: none;">
-                                            <td colspan="4" class="text-center">Kategori tidak ditemukan ! Tambah dulu disamping !</td>
-                                        </tr>
                                     </tbody>
                                 </table>
-                                <nav aria-label="Page navigation example">
-                                    <ul class="pagination justify-content-center mt-3">
-                                        <?php if ($kategori_page > 1): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?kategori_page=<?= $kategori_page - 1 ?>&search=<?= urlencode($search); ?>" aria-label="Previous">
-                                                    <span aria-hidden="true">&laquo;</span>
-                                                </a>
-                                            </li>
-                                        <?php endif; ?>
 
-                                        <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
-                                            <li class="page-item <?= ($i == $kategori_page) ? 'active' : ''; ?>">
-                                                <a class="page-link" href="?kategori_page=<?= $i; ?>&search=<?= urlencode($search); ?>"><?= $i; ?></a>
-                                            </li>
-                                        <?php } ?>
+                            </div>
+                            <!-- Pagination Navigation -->
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <?php if ($page > 1): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
 
-                                        <?php if ($kategori_page < $total_pages): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?kategori_page=<?= $kategori_page + 1 ?>&search=<?= urlencode($search); ?>" aria-label="Next">
-                                                    <span aria-hidden="true">&raquo;</span>
-                                                </a>
-                                            </li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </nav>
+                                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                            <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($page < $total_pages): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+
+                        </div>
+
+
+                        <!-- Forms for managing categories -->
+                        <div class="col-lg-6">
+                            <h4>Kelola Kategori</h4>
+                            <ul class="nav nav-tabs mb-3" id="kategoriTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="tambah-tab" data-bs-toggle="tab" data-bs-target="#tambah" type="button" role="tab" aria-controls="tambah" aria-selected="true">Tambah</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab" aria-controls="edit" aria-selected="false">Edit</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">Delete</button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="kategoriTabContent">
+                                <!-- Form Tambah -->
+                                <div class="tab-pane fade show active" id="tambah" role="tabpanel" aria-labelledby="tambah-tab">
+                                    <form id="formTambah" method="POST" action="./services/functions/kategori_functions.php">
+                                        <input type="hidden" name="action" value="tambah">
+                                        <div class="mb-3">
+                                            <label for="namaKategori" class="form-label">*Nama Kategori</label>
+                                            <input type="text" class="form-control" id="namaKategori" name="nama_kategori" placeholder="Masukan Nama Kategori baru" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Tambah</button>
+                                    </form>
+                                </div>
+
+                                <!-- Form Edit -->
+                                <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+                                    <form id="formEdit" method="POST" action="./services/functions/kategori_functions.php">
+                                        <input type="hidden" name="action" value="edit">
+                                        <div class="mb-3">
+                                            <label for="kategoriSelect" class="form-label">Pilih Kategori yang ingin diubah</label>
+                                            <select class="form-select" id="kategoriSelect" name="id_kategori">
+                                                <?php foreach ($list_kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="namaKategoriEdit" class="form-label">Nama Kategori Baru</label>
+                                            <input type="text" class="form-control" id="namaKategoriEdit" name="nama_kategori_baru" required placeholder="Masukan Nama kategori baru">
+                                        </div>
+                                        <button type="submit" class="btn btn-warning">Edit</button>
+                                    </form>
+                                </div>
+
+                                <!-- Form Delete -->
+                                <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+                                    <form id="formDelete" method="POST" action="./services/functions/kategori_functions.php">
+                                        <input type="hidden" name="action" value="delete">
+                                        <div class="mb-3">
+                                            <label for="kategoriSelectDelete" class="form-label">Pilih Kategori yang ingin dihapus</label>
+                                            <select class="form-select" id="kategoriSelectDelete" name="id_kategori">
+                                                <?php foreach ($list_kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Form Kelola Kategori -->
-                        <div class="col-lg-6">
-                            <h4>Tambah Kategori</h4>
-                            <form action="addKategori.php" method="POST">
-                                <div class="mb-3">
-                                    <label for="namaKategori" class="form-label">*Nama Kategori</label>
-                                    <input type="text" class="form-control" id="namaKategori" name="nama_kategori" required placeholder="Masukan Nama kategori baru">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Tambah</button>
-                            </form>
-                        </div>
                     </div>
                 </div>
+
             </main>
             <!-- Main Content -->
         </div>
@@ -169,51 +223,167 @@ if ($search) {
 
     <?php include "components/script.php"; ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
+        // SweetAlert untuk konfirmasi tambah kategori
+        document.querySelector('#formTambah').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form submit langsung
 
-            if (status === 'success') {
+            Swal.fire({
+                title: 'Konfirmasi Tambah',
+                text: "Apakah Anda yakin ingin menambahkan kategori ini?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Tambah!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit(); // Submit form jika dikonfirmasi
+                }
+            });
+        });
+
+        // SweetAlert untuk konfirmasi edit kategori
+        document.querySelector('#formEdit').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form submit langsung
+
+            Swal.fire({
+                title: 'Konfirmasi Edit',
+                text: "Apakah Anda yakin ingin menggubah kategori ini?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Ubah!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit(); // Submit form jika dikonfirmasi
+                }
+            });
+        });
+
+        // SweetAlert untuk konfirmasi delete kategori
+        document.querySelector('#formDelete').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form submit langsung
+
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: "Apakah Anda yakin ingin menghapus kategori ini?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit(); // Submit form jika dikonfirmasi
+                }
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let status = "<?= isset($_GET['status']) ? $_GET['status'] : '' ?>";
+            let tipe = "<?= isset($_GET['tipe']) ? $_GET['tipe'] : '' ?>";
+            let message = '';
+
+            if (status === "success") {
+                switch (tipe) {
+                    case "tambah":
+                        message = "Kategori berhasil ditambahkan!";
+                        break;
+                    case "edit":
+                        message = "Kategori berhasil diubah!";
+                        break;
+                    case "delete":
+                        message = "Kategori berhasil dihapus!";
+                        break;
+                }
                 Swal.fire({
-                    title: 'Sukses!',
-                    text: 'Kategori berhasil ditambahkan.',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    title: 'Berhasil!',
+                    text: message
                 });
-            } else if (status === 'error') {
+            } else if (status !== '') { // Jika status tidak kosong dan bukan success, berarti gagal
                 Swal.fire({
-                    title: 'Gagal!',
-                    text: 'Terjadi kesalahan saat menambahkan kategori.',
                     icon: 'error',
-                    confirmButtonText: 'OK'
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan!'
                 });
             }
         });
 
-        function searchKategori(searchTerm) {
-            searchTerm = searchTerm.toLowerCase();
-            const rows = document.querySelectorAll('#kategori-body tr:not(#kategori-not-found-row)');
-            let found = false;
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.querySelector('#menu-search');
+            const kategoriBody = document.querySelector('#kategori-body');
+            const pagination = document.querySelector('.pagination');
+            let currentPage = <?= $page ?>;
+            let totalPages = <?= $total_pages ?>;
 
-            rows.forEach(row => {
-                const namaKategori = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                if (namaKategori.includes(searchTerm)) {
-                    row.style.display = '';
-                    found = true;
-                } else {
-                    row.style.display = 'none';
+            function fetchCategories(query = '', page = 1) {
+                fetch(`./services/functions/kategori_functions.php?action=search&query=${encodeURIComponent(query)}&limit=5&offset=${(page - 1) * 5}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        kategoriBody.innerHTML = '';
+
+                        if (data.length > 0) {
+                            data.forEach((kat, index) => {
+                                kategoriBody.innerHTML += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${kat.id_kategori}</td>
+                                    <td>${kat.nama_kategori}</td>
+                                </tr>
+                            `;
+                            });
+                        } else {
+                            kategoriBody.innerHTML = "<tr><td colspan='3' class='text-center'>Kategori tidak ditemukan! Tambah kategori baru dulu!</td></tr>";
+                        }
+                    });
+
+                fetch(`./services/functions/kategori_functions.php?action=count&query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        totalPages = Math.ceil(data.total / 5);
+                        updatePagination();
+                    });
+            }
+
+            function updatePagination() {
+                pagination.innerHTML = '';
+
+                if (currentPage > 1) {
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">&laquo;</a></li>`;
+                }
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.innerHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages) {
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">&raquo;</a></li>`;
+                }
+            }
+
+            searchInput.addEventListener('input', function() {
+                let query = this.value;
+                fetchCategories(query, currentPage);
+            });
+
+            pagination.addEventListener('click', function(e) {
+                if (e.target && e.target.nodeName === 'A') {
+                    e.preventDefault();
+                    let page = parseInt(e.target.getAttribute('data-page'));
+                    if (page > 0 && page <= totalPages) {
+                        currentPage = page;
+                        fetchCategories(searchInput.value, page);
+                    }
                 }
             });
 
-            const kategoriNotFoundRow = document.getElementById('kategori-not-found-row');
-            if (kategoriNotFoundRow) {
-                if (!found) {
-                    kategoriNotFoundRow.style.display = 'table-row';
-                } else {
-                    kategoriNotFoundRow.style.display = 'none';
-                }
-            }
-        }
+            fetchCategories(searchInput.value, currentPage);
+        });
     </script>
 </body>
 

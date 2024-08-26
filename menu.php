@@ -60,19 +60,9 @@ if (!empty($kategori_filter)) {
 <head>
     <?php include "components/link.php"; ?>
     <style>
-        .kategori-card {
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .kategori-card:hover {
-            transform: scale(1.1);
-            background-color: #3B71CA;
-            color: #fff;
-            /* Optional: adjust the color on hover for better visual feedback */
-        }
-
+        /* untuk button edit delete dalam tabel */
         @media (max-width: 1340px) {
-            .btn-custom-spacing {
+            .btn-edit-delete {
                 margin-bottom: 0.5rem;
                 display: flex;
                 justify-content: center;
@@ -96,55 +86,29 @@ if (!empty($kategori_filter)) {
 
             <!-- Main Content -->
             <main class="content px-3 py-4">
-                <!-- Kategori -->
-                <div class="container-fluid mb-3">
-                    <h4>Kategori Menu:</h4>
-                    <div class="row">
-                        <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
-                            <div class="card kategori-card border border-primary d-flex <?= (empty($kategori_filter)) ? 'bg-primary text-white' : '' ?>"
-                                data-kategori=""
-                                style="width: auto; display: inline-block; cursor: pointer; transition: transform 0.2s;">
-
-                                <div class="card-body text-center p-2">
-                                    <strong>Semua</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <?php foreach ($kategori as $kat) { ?>
-                            <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
-                                <div class="card kategori-card border border-primary d-flex <?= ($kategori_filter == $kat['id_kategori']) ? 'bg-primary text-white' : '' ?>"
-                                    data-kategori="<?= $kat['id_kategori'] ?>"
-                                    style="width: auto; display: inline-block; cursor:pointer;">
-                                    <div class="card-body text-center p-2">
-                                        <strong><?= $kat['nama_kategori'] ?></strong>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php } ?>
-                        <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
-                            <div class="card kategori-card border border-primary d-flex bg-primary text-white"
-                                data-kategori=""
-                                style="width: auto; display: inline-block; cursor: pointer; transition: transform 0.2s;">
-
-                                <div class="card-body text-center p-2">
-                                    <strong><a href="kategori.php" class="text-white">Tambah Kategori ?</a></strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- End kategori -->
-
                 <!-- Menu -->
                 <div class="container-fluid">
                     <div class="row">
+                        <!-- Start Left Side -->
                         <div class="col-lg-6">
-                            <div class="row mb-2">
-                                <div class="col-md-6">
-                                    <h4><?= $nama_kategori ?></h4>
+                            <!-- Judul Tabel -->
+                            <div class="row mb-2 box-select-search">
+                                <div class="col-lg-6 mb-2">
+                                    <form method="GET" action="">
+                                        <div class="input-group">
+                                            <select class="form-select" id="kategoriSelect" name="kategori" onchange="this.form.submit()">
+                                                <option value="" <?= empty($kategori_filter) ? 'selected' : '' ?>>Semua</option>
+                                                <?php foreach ($kategori as $kat) { ?>
+                                                    <option value="<?= $kat['id_kategori'] ?>" <?= $kategori_filter == $kat['id_kategori'] ? 'selected' : '' ?>>
+                                                        <?= $kat['nama_kategori'] ?>
+                                                    </option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="col-md-6 d-flex justify-content-end">
-                                    <div class="input-group" style="max-width: 25rem;">
+                                <div class="col-lg-6 mb-2 justify-content-end">
+                                    <div class="input-group">
                                         <input class="form-control" id="menu-search" placeholder="Cari menu...">
                                         <span class="input-group-text bg-light">
                                             <i class="fas fa-search"></i>
@@ -152,7 +116,7 @@ if (!empty($kategori_filter)) {
                                     </div>
                                 </div>
                             </div>
-
+                            <!-- Judul Tabel -->
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped">
                                     <thead>
@@ -161,7 +125,7 @@ if (!empty($kategori_filter)) {
                                             <th scope="col">Nama Menu</th>
                                             <th scope="col">Harga</th>
                                             <th scope="col">Harga 1/2</th>
-                                            <th scope="col">Aksi</th>
+                                 
                                         </tr>
                                     </thead>
                                     <tbody id="menu-body">
@@ -177,10 +141,7 @@ if (!empty($kategori_filter)) {
                                                     <td><?= $menu_item['nama_menu'] ?></td>
                                                     <td><?= $menu_item['harga_menu'] ?></td>
                                                     <td><?= ($menu_item['harga_setengah'] == NULL) ? '-' : $menu_item['harga_setengah'] ?></td>
-                                                    <td>
-                                                        <a href="edit_menu.php?id=<?= $menu_item['id_menu'] ?>" class="btn btn-warning btn-sm btn-custom-spacing">Edit</a>
-                                                        <a href="delete_menu.php?id=<?= $menu_item['id_menu'] ?>" class="btn btn-danger btn-sm btn-custom-spacing" onclick="return confirm('Apakah Anda yakin ingin menghapus menu ini?')">Delete</a>
-                                                    </td>
+                                                    
                                                 </tr>
                                         <?php
                                             }
@@ -192,7 +153,6 @@ if (!empty($kategori_filter)) {
                                         </tr>
                                     </tbody>
                                 </table>
-
                                 <!-- Pagination Links -->
                                 <nav aria-label="Page navigation">
                                     <ul class="pagination justify-content-center">
@@ -221,21 +181,20 @@ if (!empty($kategori_filter)) {
                                 </nav>
                             </div>
                         </div>
+                        <!-- End Left Side -->
 
-                        <!-- Form Tambah Menu -->
+                        <!-- Start Right Side -->
                         <div class="col-lg-6">
                             <h4>Tambah Menu</h4>
+                            <!-- Form Tambah Menu -->
                             <form action="addMenu.php" method="POST">
                                 <div class="mb-3">
                                     <label for="kategori" class="form-label">*Kategori</label>
                                     <select class="form-select" id="kategori" name="kategori_id" required>
                                         <option value="" disabled selected>Pilih kategori...</option>
                                         <?php
-                                        // Ambil data kategori dari database
-                                        $kategori_query = "SELECT * FROM kategori";
-                                        $kategori_result = $db->query($kategori_query);
-                                        foreach ($kategori_result as $kategori) { ?>
-                                            <option value="<?= $kategori['id_kategori'] ?>"><?= $kategori['nama_kategori'] ?></option>
+                                        foreach ($kategori as $kat) { ?>
+                                            <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
                                         <?php } ?>
                                     </select>
                                 </div>
@@ -254,6 +213,7 @@ if (!empty($kategori_filter)) {
                                 <button type="submit" class="btn btn-primary">Tambah</button>
                             </form>
                         </div>
+                        <!-- End Right Side -->
                     </div>
 
                 </div>
@@ -285,15 +245,6 @@ if (!empty($kategori_filter)) {
             }
         });
 
-        document.querySelectorAll('.kategori-card').forEach(card => {
-            card.addEventListener('click', function() {
-                let kategoriId = this.getAttribute('data-kategori');
-                let currentUrl = window.location.href.split('?')[0];
-                let newUrl = `${currentUrl}?kategori=${kategoriId}`;
-
-                window.location.href = newUrl;
-            });
-        });
 
         document.addEventListener('DOMContentLoaded', function() {
             // Pencarian untuk tabel Menu

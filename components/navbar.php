@@ -5,13 +5,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 if ($currentPage == 'index.php') {
     $pageTittle = "Admin Dashboard";
 } elseif ($currentPage == 'menu.php') {
-    $pageTittle = "Kelola Menu";
+    $pageTittle = "Daftar Menu";
 } elseif ($currentPage == 'order.php') {
     $pageTittle = "Order";
 } elseif ($currentPage == 'riwayat.php') {
     $pageTittle = "Riwayat Penjualan";
-} else if ($currentPage = "addMenu.php"){
-    $pageTittle = "Kelola Kategori";
+} else if ($currentPage = "kategori.php"){
+    $pageTittle = "Daftar Kategori";
 } else {
     $pageTittle = "Unknown Page";
 }
