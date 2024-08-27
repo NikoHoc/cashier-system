@@ -16,18 +16,10 @@ $list_menu = $db->query($menu_query);
 ?>
 
 <?php
-$tabel_data_query = "SELECT 
-                        id_menu, 
-                        nama_kategori, 
-                        nama_menu, 
-                        harga_menu, 
-                        harga_setengah 
-                    FROM 
-                        menu 
-                    INNER JOIN 
-                        kategori 
-                    ON 
-                        kategori_id_kategori = id_kategori";
+$tabel_data_query = "SELECT id_menu, nama_kategori, nama_menu, harga_menu, harga_setengah 
+                    FROM menu INNER JOIN kategori ON kategori_id_kategori = id_kategori 
+                    ORDER BY id_kategori";
+
 
 $data_menu = $db->query($tabel_data_query);
 
@@ -82,35 +74,29 @@ $data_menu = $db->query($tabel_data_query);
                         <div class="col-lg-6">
                             <div class="row mb-3">
                                 <div class="col-md-6 col-sm-6 ">
-                                    <h4>List Kategori</h4>
+                                    <h4>List Menu</h4>
                                 </div>
                             </div>
                             <div class="table-responsive">
                                 <table id="myTable" class="table table-hover table-bordered">
                                     <thead>
                                         <tr class="table-primary">
-                                            <th scope="col">ID Menu</th>
-                                            <th scope="col">Nama Kategori</th>
-                                            <th scope="col">Nama Menu</th>
-                                            <th scope="col">Harga Menu</th>
-                                            <th scope="col">Harga 1/2</th>
+                                            <th class="fw-bold" scope="col">ID Menu</th>
+                                            <th class="fw-bold" scope="col">Nama Kategori</th>
+                                            <th class="fw-bold" scope="col">Nama Menu</th>
+                                            <th class="fw-bold" scope="col">Harga Menu</th>
+                                            <th class="fw-bold" scope="col">Harga 1/2</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-                                        if ($data_menu->num_rows > 0) {
-                                            while ($row = $data_menu->fetch_assoc()) { ?>
-                                                <tr>
-                                                    <td><?= $row['id_menu'] ?></td>
-                                                    <td><?= $row['nama_kategori'] ?></td>
-                                                    <td><?= $row['nama_menu'] ?></td>
-                                                    <td><?= $row['harga_menu'] ?></td>
-                                                    <td><?= $row['harga_setengah'] ?></td>
-                                                </tr>
-                                            <?php }
-                                        } else { ?>
+                                        foreach ($data_menu as $menu) { ?>
                                             <tr>
-                                                <td colspan="5">Tidak ada data menu yang ditemukan</td>
+                                                <td><?= $menu['id_menu'] ?></td>
+                                                <td><?= $menu['nama_kategori'] ?></td>
+                                                <td><?= $menu['nama_menu'] ?></td>
+                                                <td><?= $menu['harga_menu'] ?></td>
+                                                <td><?= $menu['harga_setengah'] !== null ? $menu['harga_setengah'] : '-' ?></td>
                                             </tr>
                                         <?php }
                                         ?>
@@ -141,7 +127,9 @@ $data_menu = $db->query($tabel_data_query);
                                     <form id="formTambah" method="POST" action="./services/functions/menu_functions.php">
                                         <input type="hidden" name="action" value="tambah">
                                         <div class="mb-3">
-                                            <label for="kategori" class="form-label">*Kategori</label>
+                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Kategori Menu
+                                            </label>
                                             <select class="form-select" id="kategori" name="kategori_id" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
                                                 <?php foreach ($list_kategori as $kat) { ?>
@@ -150,15 +138,22 @@ $data_menu = $db->query($tabel_data_query);
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="namaMenu" class="form-label">*Nama Menu</label>
+                                            <label for="namaMenu" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Nama Menu
+                                            </label>
                                             <input type="text" class="form-control" id="namaMenu" name="nama_menu" required placeholder="Masukan Nama Menu">
                                         </div>
                                         <div class="mb-3">
-                                            <label for="harga" class="form-label">*Harga</label>
+                                            <label for="harga" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Harga Menu
+                                            </label>
                                             <input type="number" class="form-control" id="harga" name="harga" required placeholder="Masukan Harga Menu">
                                         </div>
                                         <div class="mb-3">
-                                            <label for="hargaSetengah" class="form-label">Harga 1/2 (Opsional)</label>
+                                            <label for="hargaSetengah" class="form-label fw-semibold text-dark">
+                                                Harga 1/2 <span class="fw-light">(Opsional)</span>
+                                            </label>
+
                                             <input type="number" class="form-control" id="hargaSetengah" name="harga_setengah" placeholder="Masukan Harga 1/2 Menu">
                                         </div>
                                         <button type="submit" class="btn btn-primary">Tambah</button>
@@ -170,16 +165,20 @@ $data_menu = $db->query($tabel_data_query);
                                     <form id="formEdit" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="edit">
                                         <div class="mb-3">
-                                            <label for="kategoriEdit" class="form-label">*Kategori</label>
+                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>List kategori menu
+                                            </label>
                                             <select class="form-select" id="kategoriEdit" name="kategori_id_edit" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
-                                                <?php foreach ($kategori as $kat) { ?>
+                                                <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
                                                 <?php } ?>
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="menuEditSelect" class="form-label">*Pilih Menu</label>
+                                            <label for="menuEditSelect" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Pilih menu yang ingin diubah
+                                            </label>
                                             <select class="form-select" id="menuEditSelect" name="menu_id_edit" required>
                                                 <option value="" disabled selected>Pilih menu...</option>
                                                 <!-- Options will be populated via AJAX based on selected category -->
@@ -225,16 +224,20 @@ $data_menu = $db->query($tabel_data_query);
                                     <form id="formDelete" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="delete">
                                         <div class="mb-3">
-                                            <label for="kategoriDelete" class="form-label">*Kategori</label>
+                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>List kategori menu
+                                            </label>
                                             <select class="form-select" id="kategoriDelete" name="kategori_id_delete" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
-                                                <?php foreach ($kategori as $kat) { ?>
+                                                <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
                                                 <?php } ?>
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="menuDeleteSelect" class="form-label">*Pilih Menu</label>
+                                            <label for="menuDeleteSelect" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Pilih menu yang ingin dihapus
+                                            </label>
                                             <select class="form-select" id="menuDeleteSelect" name="menu_id_delete" required>
                                                 <option value="" disabled selected>Pilih menu...</option>
                                                 <!-- Options will be populated via AJAX based on selected category -->

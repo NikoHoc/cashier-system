@@ -74,9 +74,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                 <table id="myTable" class="table table-hover table-bordered">
                                     <thead>
                                         <tr class="table-primary">
-                                            <th scope="col">No</th>
-                                            <th scope="col">ID Kategori</th>
-                                            <th scope="col">Nama kategori</th>
+                                            <th class="fw-bold" scope="col">No</th>
+                                            <th class="fw-bold" scope="col">ID Kategori</th>
+                                            <th class="fw-bold" scope="col">Nama kategori</th>
                                         </tr>
                                     </thead>
                                     <tbody id="kategori-body">
@@ -117,7 +117,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                     <form id="formTambah" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="tambah">
                                         <div class="mb-3">
-                                            <label for="namaKategori" class="form-label">*Nama Kategori</label>
+                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Nama kategori
+                                            </label>
                                             <input type="text" class="form-control" id="namaKategori" name="nama_kategori" placeholder="Masukan Nama Kategori baru" required>
                                         </div>
                                         <button type="submit" class="btn btn-primary">Tambah</button>
@@ -129,7 +131,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                     <form id="formEdit" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="edit">
                                         <div class="mb-3">
-                                            <label for="kategoriSelect" class="form-label">Pilih Kategori yang ingin diubah</label>
+                                            <label for="kategoriSelect" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Pilih kategori yang ingin diubah
+                                            </label>
                                             <select class="form-select" id="kategoriSelect" name="id_kategori">
                                                 <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
@@ -137,7 +141,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="namaKategoriEdit" class="form-label">Nama Kategori Baru</label>
+                                            <label for="namaKategoriEdit" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Nama kategori baru
+                                            </label>
                                             <input type="text" class="form-control" id="namaKategoriEdit" name="nama_kategori_baru" required placeholder="Masukan Nama kategori baru">
                                         </div>
                                         <button type="submit" class="btn btn-warning">Edit</button>
@@ -149,7 +155,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                     <form id="formDelete" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="delete">
                                         <div class="mb-3">
-                                            <label for="kategoriSelectDelete" class="form-label">Pilih Kategori yang ingin dihapus</label>
+                                            <label for="kategoriSelectDelete" class="form-label fw-semibold text-dark">
+                                                <span class="text-danger">*</span>Pilih kategori yang ingin dihapus
+                                            </label>
                                             <select class="form-select" id="kategoriSelectDelete" name="id_kategori">
                                                 <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
