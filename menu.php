@@ -8,50 +8,29 @@ if ($_SESSION['is_login'] == false) {
 
 // Data kategori
 $kategori_query = "SELECT * FROM kategori";
-$kategori = $db->query($kategori_query);
+$list_kategori = $db->query($kategori_query);
 
-// Data menu dengan filter kategori
-$kategori_filter = isset($_GET['kategori']) ? $_GET['kategori'] : '';
+$menu_query = "SELECT * FROM menu";
+$list_menu = $db->query($menu_query);
 
-// Setup pagination
-$limit = 5;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
+?>
 
-// Query untuk data menu dengan pagination
-$menu_query = "SELECT * FROM menu WHERE 1";
+<?php
+$tabel_data_query = "SELECT 
+                        id_menu, 
+                        nama_kategori, 
+                        nama_menu, 
+                        harga_menu, 
+                        harga_setengah 
+                    FROM 
+                        menu 
+                    INNER JOIN 
+                        kategori 
+                    ON 
+                        kategori_id_kategori = id_kategori";
 
-if (!empty($kategori_filter)) {
-    $menu_query .= " AND kategori_id_kategori = '$kategori_filter'";
-}
+$data_menu = $db->query($tabel_data_query);
 
-$menu_query .= " LIMIT $limit OFFSET $offset";
-$menu = $db->query($menu_query);
-
-// Hitung total data untuk pagination
-$total_query = "SELECT COUNT(*) as total FROM menu WHERE 1";
-
-if (!empty($kategori_filter)) {
-    $total_query .= " AND kategori_id_kategori = '$kategori_filter'";
-}
-$total_result = $db->query($total_query);
-$total_data = $total_result->fetch_assoc()['total'];
-
-$total_pages = ceil($total_data / $limit);
-
-// Cek jika tabel menu kosong atau kategori tidak memiliki menu
-$isMenuEmpty = ($menu->num_rows == 0);
-
-// Ambil nama kategori yang dipilih jika ada filter kategori
-$nama_kategori = "Semua"; // Default
-if (!empty($kategori_filter)) {
-    $kategori_nama_query = "SELECT nama_kategori FROM kategori WHERE id_kategori = '$kategori_filter'";
-    $result = $db->query($kategori_nama_query);
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $nama_kategori = $row['nama_kategori'];
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -60,13 +39,24 @@ if (!empty($kategori_filter)) {
 <head>
     <?php include "includes/head.php"; ?>
     <style>
-        /* untuk button edit delete dalam tabel */
-        @media (max-width: 1340px) {
-            .btn-edit-delete {
+        @media (max-width: 1156px) {
+            .btn-custom-spacing {
                 margin-bottom: 0.5rem;
                 display: flex;
                 justify-content: center;
             }
+        }
+
+        .tab-content.card {
+            margin-top: -1rem;
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            /* Optional: Adds a subtle shadow */
         }
     </style>
 </head>
@@ -86,130 +76,75 @@ if (!empty($kategori_filter)) {
 
             <!-- Main Content -->
             <main class="content px-3 py-4">
-                <!-- Menu -->
-                <div class="container-fluid mt-2">
+                <div class="container-fluid card p-4">
                     <div class="row">
-                        <!-- Start Left Side -->
+                        <!-- Daftar tabel Kategori -->
                         <div class="col-lg-6">
-                            <!-- Judul Tabel -->
-                            <div class="row mb-2 box-select-search">
-                                <div class="col-lg-6 mb-2">
-                                    <form method="GET" action="">
-                                        <div class="input-group">
-                                            <select class="form-select" id="kategoriSelect" name="kategori" onchange="this.form.submit()">
-                                                <option value="" <?= empty($kategori_filter) ? 'selected' : '' ?>>Semua</option>
-                                                <?php foreach ($kategori as $kat) { ?>
-                                                    <option value="<?= $kat['id_kategori'] ?>" <?= $kategori_filter == $kat['id_kategori'] ? 'selected' : '' ?>>
-                                                        <?= $kat['nama_kategori'] ?>
-                                                    </option>
-                                                <?php } ?>
-                                            </select>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="col-lg-6 mb-2 justify-content-end">
-                                    <div class="input-group">
-                                        <input class="form-control" id="menu-search" placeholder="Cari menu...">
-                                        <span class="input-group-text bg-light">
-                                            <i class="fas fa-search"></i>
-                                        </span>
-                                    </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 col-sm-6 ">
+                                    <h4>List Kategori</h4>
                                 </div>
                             </div>
-                            <!-- Judul Tabel -->
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
+                                <table id="myTable" class="table table-hover table-bordered">
                                     <thead>
                                         <tr class="table-primary">
-                                            <th scope="col">No</th>
+                                            <th scope="col">ID Menu</th>
+                                            <th scope="col">Nama Kategori</th>
                                             <th scope="col">Nama Menu</th>
-                                            <th scope="col">Harga</th>
+                                            <th scope="col">Harga Menu</th>
                                             <th scope="col">Harga 1/2</th>
-
                                         </tr>
                                     </thead>
-                                    <tbody id="menu-body">
+                                    <tbody>
                                         <?php
-                                        if ($isMenuEmpty) {
-                                            echo '<tr><td colspan="5" class="text-center">Belum ada item! Tambah menu dulu disamping!</td></tr>';
-                                        } else {
-                                            $no = $offset + 1;
-                                            foreach ($menu as $menu_item) {
-                                        ?>
+                                        if ($data_menu->num_rows > 0) {
+                                            while ($row = $data_menu->fetch_assoc()) { ?>
                                                 <tr>
-                                                    <td><?= $no++ ?></td>
-                                                    <td><?= $menu_item['nama_menu'] ?></td>
-                                                    <td><?= $menu_item['harga_menu'] ?></td>
-                                                    <td><?= ($menu_item['harga_setengah'] == NULL) ? '-' : $menu_item['harga_setengah'] ?></td>
-
+                                                    <td><?= $row['id_menu'] ?></td>
+                                                    <td><?= $row['nama_kategori'] ?></td>
+                                                    <td><?= $row['nama_menu'] ?></td>
+                                                    <td><?= $row['harga_menu'] ?></td>
+                                                    <td><?= $row['harga_setengah'] ?></td>
                                                 </tr>
-                                        <?php
-                                            }
-                                        }
+                                            <?php }
+                                        } else { ?>
+                                            <tr>
+                                                <td colspan="5">Tidak ada data menu yang ditemukan</td>
+                                            </tr>
+                                        <?php }
                                         ?>
-                                        <!-- Tambahkan baris pesan yang akan ditampilkan ketika pencarian tidak menemukan hasil -->
-                                        <tr id="menu-not-found-row" style="display:none;">
-                                            <td colspan="5" class="text-center">Item tidak ditemukan! Tambah menu dulu disamping</td>
-                                        </tr>
                                     </tbody>
                                 </table>
-                                <!-- Pagination Links -->
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination justify-content-center">
-                                        <?php if ($page > 1): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?kategori=<?= $kategori_filter ?>&page=<?= $page - 1 ?>" aria-label="Previous">
-                                                    <span aria-hidden="true">&laquo;</span>
-                                                </a>
-                                            </li>
-                                        <?php endif; ?>
-
-                                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                            <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                                                <a class="page-link" href="?kategori=<?= $kategori_filter ?>&page=<?= $i ?>"><?= $i ?></a>
-                                            </li>
-                                        <?php endfor; ?>
-
-                                        <?php if ($page < $total_pages): ?>
-                                            <li class="page-item">
-                                                <a class="page-link" href="?kategori=<?= $kategori_filter ?>&page=<?= $page + 1 ?>" aria-label="Next">
-                                                    <span aria-hidden="true">&raquo;</span>
-                                                </a>
-                                            </li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </nav>
                             </div>
                         </div>
-                        <!-- End Left Side -->
 
-                        <!-- Start Right Side -->
-                        <div class="col-lg-6">
-                            <h4>Kelola Menu</h4>
-                            <!-- Navigation Tabs -->
-                            <ul class="nav nav-tabs" id="menuTabs" role="tablist">
+
+                        <!-- Forms for managing categories -->
+                        <div class="col-lg-6 mt-3 mt-md-3 mt-lg-0">
+                            <h4 class="mb-4">Kelola Menu</h4>
+                            <ul class="nav nav-tabs mb-3" id="menuTab" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="add-tab" data-bs-toggle="tab" data-bs-target="#addMenu" type="button" role="tab" aria-controls="addMenu" aria-selected="true">Tambah</button>
+                                    <button class="nav-link active" id="tambah-tab" data-bs-toggle="tab" data-bs-target="#tambah" type="button" role="tab" aria-controls="tambah" aria-selected="true">Tambah</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#editMenu" type="button" role="tab" aria-controls="editMenu" aria-selected="false">Edit</button>
+                                    <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab" aria-controls="edit" aria-selected="false">Edit</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#deleteMenu" type="button" role="tab" aria-controls="deleteMenu" aria-selected="false">Delete</button>
+                                    <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">Delete</button>
                                 </li>
                             </ul>
 
-                            <!-- Tab Content -->
-                            <div class="tab-content" id="menuTabsContent">
-                                <!-- Tab for Adding Menu -->
-                                <div class="tab-pane fade show active" id="addMenu" role="tabpanel" aria-labelledby="add-tab">
-                                    <form action="addMenu.php" method="POST">
-                                        <!-- Same content as the existing Add Menu form -->
+                            <div class="tab-content card bg-light p-4" id="menuTabContent">
+                                <!-- Form Tambah -->
+                                <div class="tab-pane fade show active" id="tambah" role="tabpanel" aria-labelledby="tambah-tab">
+                                    <form id="formTambah" method="POST" action="./services/functions/menu_functions.php">
+                                        <input type="hidden" name="action" value="tambah">
                                         <div class="mb-3">
                                             <label for="kategori" class="form-label">*Kategori</label>
                                             <select class="form-select" id="kategori" name="kategori_id" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
-                                                <?php foreach ($kategori as $kat) { ?>
+                                                <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
                                                 <?php } ?>
                                             </select>
@@ -230,9 +165,10 @@ if (!empty($kategori_filter)) {
                                     </form>
                                 </div>
 
-                                <!-- Tab for Editing Menu -->
-                                <div class="tab-pane fade" id="editMenu" role="tabpanel" aria-labelledby="edit-tab">
-                                    <form action="editMenu.php" method="POST">
+                                <!-- Form Edit -->
+                                <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+                                    <form id="formEdit" method="POST" action="./services/functions/kategori_functions.php">
+                                        <input type="hidden" name="action" value="edit">
                                         <div class="mb-3">
                                             <label for="kategoriEdit" class="form-label">*Kategori</label>
                                             <select class="form-select" id="kategoriEdit" name="kategori_id_edit" required>
@@ -280,13 +216,14 @@ if (!empty($kategori_filter)) {
                                                 <input type="text" class="form-control" id="editHargaSetengah" name="edit_harga_setengah" required>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Edit</button>
+                                        <button type="submit" class="btn btn-warning">Edit</button>
                                     </form>
                                 </div>
 
-                                <!-- Tab for Deleting Menu -->
-                                <div class="tab-pane fade" id="deleteMenu" role="tabpanel" aria-labelledby="delete-tab">
-                                    <form action="deleteMenu.php" method="POST">
+                                <!-- Form Delete -->
+                                <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+                                    <form id="formDelete" method="POST" action="./services/functions/kategori_functions.php">
+                                        <input type="hidden" name="action" value="delete">
                                         <div class="mb-3">
                                             <label for="kategoriDelete" class="form-label">*Kategori</label>
                                             <select class="form-select" id="kategoriDelete" name="kategori_id_delete" required>
@@ -303,75 +240,102 @@ if (!empty($kategori_filter)) {
                                                 <!-- Options will be populated via AJAX based on selected category -->
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                        <button type="submit" class="btn btn-danger">Delete</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                        <!-- End Right Side -->
-                    </div>
 
+                    </div>
                 </div>
-                <!-- End Menu -->
+
             </main>
             <!-- Main Content -->
         </div>
     </div>
 
+    <?php include "includes/script.php"; ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-
-            if (status === 'success') {
-                Swal.fire({
-                    title: 'Sukses!',
-                    text: 'Menu berhasil ditambahkan.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            } else if (status === 'error') {
-                Swal.fire({
-                    title: 'Gagal!',
-                    text: 'Terjadi kesalahan saat menambahkan menu.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
-        });
-
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pencarian untuk tabel Menu
-            const searchInputMenu = document.getElementById('menu-search');
-            const menuTableBody = document.getElementById('menu-body');
-            const menuNotFoundRow = document.getElementById('menu-not-found-row');
-
-            searchInputMenu.addEventListener('input', function() {
-                const searchTerm = searchInputMenu.value.toLowerCase();
-                const rows = menuTableBody.getElementsByTagName('tr');
-                let found = false;
-
-                Array.from(rows).forEach(row => {
-                    // Skip baris 'menu-not-found-row' saat mengecek hasil pencarian
-                    if (row.id === 'menu-not-found-row') return;
-
-                    const namaMenu = row.getElementsByTagName('td')[1].textContent.toLowerCase();
-                    if (namaMenu.includes(searchTerm)) {
-                        row.style.display = '';
-                        found = true;
-                    } else {
-                        row.style.display = 'none';
+        $(document).ready(function() {
+            $('#myTable').DataTable({
+                language: {
+                    searchPlaceholder: "Cari menu", // Add placeholder to search box
+                    paginate: {
+                        previous: "<", // Use "<" for previous button
+                        next: ">" // Use ">" for next button
                     }
-                });
-
-                // Jika tidak ada item ditemukan, tampilkan baris 'menu-not-found-row'
-                menuNotFoundRow.style.display = found ? 'none' : 'table-row';
+                }
             });
         });
-    </script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Generic SweetAlert confirmation function
+            function confirmAction(e, actionType, message, formId) {
+                e.preventDefault(); // Prevent the form from submitting immediately
 
-    <?php include "includes/script.php"; ?>
+                Swal.fire({
+                    title: `Konfirmasi ${actionType}`,
+                    text: message,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: `Ya, ${actionType}!`,
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.querySelector(formId).submit(); // Submit the form if confirmed
+                    }
+                });
+            }
+
+            // Event listener for the Tambah form
+            $('#formTambah').on('submit', function(e) {
+                confirmAction(e, 'Tambah', 'Apakah Anda yakin ingin menambahkan menu ini?', '#formTambah');
+            });
+
+            // Event listener for the Edit form
+            $('#formEdit').on('submit', function(e) {
+                confirmAction(e, 'Edit', 'Apakah Anda yakin ingin mengubah menu ini?', '#formEdit');
+            });
+
+            // Event listener for the Delete form
+            $('#formDelete').on('submit', function(e) {
+                confirmAction(e, 'Hapus', 'Apakah Anda yakin ingin menghapus menu ini?', '#formDelete');
+            });
+
+            // Notification after form submission
+            let status = "<?= isset($_GET['status']) ? $_GET['status'] : '' ?>";
+            let tipe = "<?= isset($_GET['tipe']) ? $_GET['tipe'] : '' ?>";
+            let message = '';
+
+            if (status === "success") {
+                switch (tipe) {
+                    case "tambah":
+                        message = "Menu berhasil ditambahkan!";
+                        break;
+                    case "edit":
+                        message = "Menu berhasil diubah!";
+                        break;
+                    case "delete":
+                        message = "Menu berhasil dihapus!";
+                        break;
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: message
+                });
+            } else if (status !== '') { // If status is not empty and not success, then it's a failure
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan!'
+                });
+            }
+
+
+        });
+    </script>
 </body>
 
 </html>
