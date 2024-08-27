@@ -11,6 +11,24 @@ $list_kategori = $db->query($kategori_query);
 ?>
 
 <?php
+// Pagination tabel
+$limit = 5;
+// Dapatkan halaman saat ini
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Hitung total data
+$total_query = "SELECT COUNT(*) as total FROM kategori";
+$total_result = $db->query($total_query);
+$total_data = $total_result->fetch_assoc()['total'];
+$total_pages = ceil($total_data / $limit);
+
+// Query untuk mendapatkan data sesuai halaman
+$kategori_query = "SELECT * FROM kategori LIMIT $limit OFFSET $offset";
+$kategori = $db->query($kategori_query);
+?>
+
+<?php
 // Notifikasi untuk insert,delete,update
 if (isset($_GET['status']) && isset($_GET['tipe'])) {
     $status = $_GET['status'];
@@ -31,18 +49,6 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                 justify-content: center;
             }
         }
-
-        .tab-content.card {
-            margin-top: -1rem;
-            border-top: none;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            /* Optional: Adds a subtle shadow */
-        }
     </style>
 </head>
 
@@ -61,44 +67,84 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
 
             <!-- Main Content -->
             <main class="content px-3 py-4">
-                <div class="container-fluid card p-4">
+                <div class="container-fluid">
                     <div class="row">
                         <!-- Daftar tabel Kategori -->
-                        <div class="col-lg-6">
+                        <div class="col-lg-6 ">
                             <div class="row mb-3">
                                 <div class="col-md-6 col-sm-6 ">
                                     <h4>List Kategori</h4>
                                 </div>
+                                <div class="col-md-6 col-sm-6 justify-content-end">
+                                    <div class="input-group">
+                                        <input class="form-control" id="menu-search" placeholder="Cari kategori...">
+                                        <span class="input-group-text bg-light">
+                                            <i class="fas fa-search"></i>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="table-responsive">
-                                <table id="myTable" class="table table-hover table-bordered">
+                                <table class="table table-bordered table-striped">
                                     <thead>
                                         <tr class="table-primary">
                                             <th scope="col">No</th>
                                             <th scope="col">ID Kategori</th>
                                             <th scope="col">Nama kategori</th>
+
                                         </tr>
                                     </thead>
                                     <tbody id="kategori-body">
                                         <?php
-                                        $no = 1;
-                                        foreach ($list_kategori as $kat) { ?>
-                                            <tr>
-                                                <td><?= $no++ ?></td>
-                                                <td><?= $kat['id_kategori'] ?></td>
-                                                <td><?= $kat['nama_kategori'] ?></td>
-                                            </tr>
+                                        if ($total_data == 0) {
+                                            echo "<tr><td colspan='3' class='text-center'>Belum ada kategori! Tambah kategori baru dulu!</td></tr>";
+                                        } else {
+                                            $no = $offset + 1;
+                                            foreach ($kategori as $kat) { ?>
+                                                <tr>
+                                                    <td><?= $no++ ?></td>
+                                                    <td><?= $kat['id_kategori'] ?></td>
+                                                    <td><?= $kat['nama_kategori'] ?></td>
+                                                </tr>
                                         <?php }
-                                        ?>
+                                        } ?>
                                     </tbody>
                                 </table>
+
                             </div>
+                            <!-- Pagination Navigation -->
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <?php if ($page > 1): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+
+                                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                                            <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($page < $total_pages): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+
                         </div>
 
 
                         <!-- Forms for managing categories -->
-                        <div class="col-lg-6 mt-3 mt-md-3 mt-lg-0">
-                            <h4 class="mb-4">Kelola Kategori</h4>
+                        <div class="col-lg-6">
+                            <h4>Kelola Kategori</h4>
                             <ul class="nav nav-tabs mb-3" id="kategoriTab" role="tablist">
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active" id="tambah-tab" data-bs-toggle="tab" data-bs-target="#tambah" type="button" role="tab" aria-controls="tambah" aria-selected="true">Tambah</button>
@@ -111,7 +157,7 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                 </li>
                             </ul>
 
-                            <div class="tab-content card bg-light p-4" id="kategoriTabContent">
+                            <div class="tab-content" id="kategoriTabContent">
                                 <!-- Form Tambah -->
                                 <div class="tab-pane fade show active" id="tambah" role="tabpanel" aria-labelledby="tambah-tab">
                                     <form id="formTambah" method="POST" action="./services/functions/kategori_functions.php">
@@ -172,17 +218,6 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
 
     <?php include "includes/script.php"; ?>
     <script>
-        $(document).ready(function() {
-            $('#myTable').DataTable({
-                language: {
-                    searchPlaceholder: "Cari kategori", // Add placeholder to search box
-                    paginate: {
-                        previous: "<", // Use "<" for previous button
-                        next: ">" // Use ">" for next button
-                    }
-                }
-            });
-        });
         document.addEventListener("DOMContentLoaded", function() {
             // Generic SweetAlert confirmation function
             function confirmAction(e, actionType, message, formId) {
@@ -205,17 +240,17 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
             }
 
             // Event listener for the Tambah form
-            $('#formTambah').on('submit', function(e) {
+            document.querySelector('#formTambah').addEventListener('submit', function(e) {
                 confirmAction(e, 'Tambah', 'Apakah Anda yakin ingin menambahkan kategori ini?', '#formTambah');
             });
 
             // Event listener for the Edit form
-            $('#formEdit').on('submit', function(e) {
+            document.querySelector('#formEdit').addEventListener('submit', function(e) {
                 confirmAction(e, 'Edit', 'Apakah Anda yakin ingin mengubah kategori ini?', '#formEdit');
             });
 
             // Event listener for the Delete form
-            $('#formDelete').on('submit', function(e) {
+            document.querySelector('#formDelete').addEventListener('submit', function(e) {
                 confirmAction(e, 'Hapus', 'Apakah Anda yakin ingin menghapus kategori ini?', '#formDelete');
             });
 
@@ -249,7 +284,75 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                 });
             }
 
+            // Other event listeners and functions
+            const searchInput = document.querySelector('#menu-search');
+            const kategoriBody = document.querySelector('#kategori-body');
+            const pagination = document.querySelector('.pagination');
+            let currentPage = <?= $page ?>;
+            let totalPages = <?= $total_pages ?>;
 
+            function fetchCategories(query = '', page = 1) {
+                fetch(`./services/functions/kategori_functions.php?action=search&query=${encodeURIComponent(query)}&limit=5&offset=${(page - 1) * 5}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        kategoriBody.innerHTML = '';
+
+                        if (data.length > 0) {
+                            data.forEach((kat, index) => {
+                                kategoriBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${kat.id_kategori}</td>
+                            <td>${kat.nama_kategori}</td>
+                        </tr>
+                    `;
+                            });
+                        } else {
+                            kategoriBody.innerHTML = "<tr><td colspan='3' class='text-center'>Kategori tidak ditemukan! Tambah kategori baru dulu!</td></tr>";
+                        }
+                    });
+
+                fetch(`./services/functions/kategori_functions.php?action=count&query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        totalPages = Math.ceil(data.total / 5);
+                        updatePagination();
+                    });
+            }
+
+            function updatePagination() {
+                pagination.innerHTML = '';
+
+                if (currentPage > 1) {
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">&laquo;</a></li>`;
+                }
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pagination.innerHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages) {
+                    pagination.innerHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">&raquo;</a></li>`;
+                }
+            }
+
+            searchInput.addEventListener('input', function() {
+                let query = this.value;
+                fetchCategories(query, currentPage);
+            });
+
+            pagination.addEventListener('click', function(e) {
+                if (e.target && e.target.nodeName === 'A') {
+                    e.preventDefault();
+                    let page = parseInt(e.target.getAttribute('data-page'));
+                    if (page > 0 && page <= totalPages) {
+                        currentPage = page;
+                        fetchCategories(searchInput.value, page);
+                    }
+                }
+            });
+
+            fetchCategories(searchInput.value, currentPage);
         });
     </script>
 </body>

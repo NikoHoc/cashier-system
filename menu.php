@@ -87,7 +87,7 @@ if (!empty($kategori_filter)) {
             <!-- Main Content -->
             <main class="content px-3 py-4">
                 <!-- Menu -->
-                <div class="container-fluid">
+                <div class="container-fluid mt-2">
                     <div class="row">
                         <!-- Start Left Side -->
                         <div class="col-lg-6">
