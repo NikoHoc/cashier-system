@@ -237,7 +237,7 @@ $data_menu = $db->query($tabel_data_query);
                                             </div>
                                         </div>
                                         <div class="mb-3 d-flex justify-content-end">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
+                                            <button type="submit" class="btn btn-warning" disabled>Edit</button>
                                         </div>
                                     </form>
                                 </div>
@@ -384,7 +384,6 @@ $data_menu = $db->query($tabel_data_query);
                     }
                 }
             }
-
         });
 
 
@@ -446,7 +445,7 @@ $data_menu = $db->query($tabel_data_query);
                     title: 'Berhasil!',
                     text: message
                 });
-            } else if (status !== '') { // If status is not empty and not success, then it's a failure
+            } else if (status !== 'error') { // If status is not empty and not success, then it's a failure
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',

@@ -19,6 +19,7 @@ function editMenu($db, $id_menu, $id_kategori, $nama_menu, $harga_menu, $harga_s
         $query = "UPDATE menu SET nama_menu = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
         $stmt = $db->prepare($query);
         $stmt->bind_param("sii", $nama_menu, $id_menu, $id_kategori);
+
     } else if ($nama_menu == null && $harga_menu != null && $harga_setengah == null) {
         // edit harga menu
         $query = "UPDATE menu SET harga_menu = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
@@ -29,6 +30,24 @@ function editMenu($db, $id_menu, $id_kategori, $nama_menu, $harga_menu, $harga_s
         $query = "UPDATE menu SET harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
         $stmt = $db->prepare($query);
         $stmt->bind_param("dii", $harga_setengah, $id_menu, $id_kategori);
+    } else if ($nama_menu != null && $harga_menu != null && $harga_setengah == null) {
+        // edit nama menu dan harga
+        $query = "UPDATE menu SET nama_menu = ?, harga_menu = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("sdii", $nama_menu, $harga_menu, $id_menu, $id_kategori);
+
+    } else if ($nama_menu != null && $harga_menu == null && $harga_setengah != null) {
+        // edit nama menu dan harga setengah
+        $query = "UPDATE menu SET nama_menu = ?, harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("sdii", $harga_menu, $harga_setengah, $id_menu, $id_kategori);
+
+    } else if ($nama_menu == null && $harga_menu != null && $harga_setengah != null) {
+        // edit harga dan harga 1/2
+        $query = "UPDATE menu SET harga_menu = ?, harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("ddii",$harga_menu, $harga_setengah, $id_menu, $id_kategori);
+
     } else {
         // edit nama, harga, harga 1/2
         $query = "UPDATE menu SET nama_menu = ?, harga_menu = ?, harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
@@ -77,6 +96,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama_menu_baru = isset($_POST['nama_menu']) ? $_POST['nama_menu'] : null;
         $harga_menu = isset($_POST['harga_menu']) ? $_POST['harga_menu'] : null;
         $harga_setengah = isset($_POST['harga_setengah']) ? $_POST['harga_setengah'] : null; 
+
+        if ($nama_menu_baru == null && $harga_menu == null && $harga_setengah == null ) {
+            $tipe='edit';
+            header("Location: /menu.php?status=$status&tipe=$tipe");
+            exit();
+        }
         if (editMenu($db, $id_menu, $id_kategori, $nama_menu_baru, $harga_menu, $harga_setengah)) {
             $status = 'success';
         }
