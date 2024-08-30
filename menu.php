@@ -5,17 +5,51 @@ session_start();
 if ($_SESSION['is_login'] == false) {
     header("location: login.php");
 }
+?>
 
+<?php
+/* Data untuk form */
 // Data kategori
 $kategori_query = "SELECT * FROM kategori";
 $list_kategori = $db->query($kategori_query);
 
-$menu_query = "SELECT * FROM menu";
-$list_menu = $db->query($menu_query);
+// Cek jika ini adalah permintaan AJAX untuk mendapatkan menu berdasarkan kategori
+if (isset($_POST['action']) && $_POST['action'] === 'get_menu_by_category') {
+    $kategori_id = $_POST['kategori_id'];
+    $selected_kategori_query = mysqli_query($db, "SELECT * FROM kategori WHERE id_kategori = $kategori_id");
+    $list_menu_query = mysqli_query($db, "SELECT * FROM menu WHERE kategori_id_kategori = $kategori_id");
+
+    if (mysqli_num_rows($list_menu_query) > 0) {
+        echo '<option value="" disabled selected>Pilih menu...</option>';
+        while ($row_menu = mysqli_fetch_array($list_menu_query)) {
+            echo '<option value="' . $row_menu['id_menu'] . '">' . $row_menu['nama_menu'] . '</option>';
+        }
+    } else {
+
+        $selected_kategori = mysqli_fetch_array($selected_kategori_query);
+        echo '<option value="" disabled selected>Pilih menu...</option>';
+        echo '<option value="no_item">Tidak ada menu di kategori ' . $selected_kategori['nama_kategori'] . '</option>';
+    }
+    exit;
+}
+?>
+
+<?php
+/* detail data di form */
+if (isset($_POST['action']) && $_POST['action'] === 'get_menu_details') {
+    $menu_id = $_POST['menu_id'];
+    $menu_query = mysqli_query($db, "SELECT nama_menu, harga_menu, harga_setengah FROM menu WHERE id_menu = $menu_id");
+
+    $menu_data = mysqli_fetch_assoc($menu_query);
+
+    echo json_encode($menu_data);
+    exit;
+}
 
 ?>
 
 <?php
+/* data untuk tabel */
 $tabel_data_query = "SELECT id_menu, nama_kategori, nama_menu, harga_menu, harga_setengah 
                     FROM menu INNER JOIN kategori ON kategori_id_kategori = id_kategori 
                     ORDER BY id_kategori";
@@ -31,14 +65,6 @@ $data_menu = $db->query($tabel_data_query);
 <head>
     <?php include "includes/head.php"; ?>
     <style>
-        @media (max-width: 1156px) {
-            .btn-custom-spacing {
-                margin-bottom: 0.5rem;
-                display: flex;
-                justify-content: center;
-            }
-        }
-
         .tab-content.card {
             margin-top: -1rem;
             border-top: none;
@@ -95,8 +121,8 @@ $data_menu = $db->query($tabel_data_query);
                                                 <td><?= $menu['id_menu'] ?></td>
                                                 <td><?= $menu['nama_kategori'] ?></td>
                                                 <td><?= $menu['nama_menu'] ?></td>
-                                                <td><?= $menu['harga_menu'] ?></td>
-                                                <td><?= $menu['harga_setengah'] !== null ? $menu['harga_setengah'] : '-' ?></td>
+                                                <td><?= 'Rp ' . number_format($menu['harga_menu'], 0, ',', '.') ?></td>
+                                                <td><?= $menu['harga_setengah'] != 0 ? 'Rp ' . number_format($menu['harga_setengah'], 0, ',', '.') : '-' ?></td>
                                             </tr>
                                         <?php }
                                         ?>
@@ -104,7 +130,6 @@ $data_menu = $db->query($tabel_data_query);
                                 </table>
                             </div>
                         </div>
-
 
                         <!-- Forms for managing categories -->
                         <div class="col-lg-6 mt-3 mt-md-3 mt-lg-0">
@@ -130,7 +155,7 @@ $data_menu = $db->query($tabel_data_query);
                                             <label for="namaKategori" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Kategori Menu
                                             </label>
-                                            <select class="form-select" id="kategori" name="kategori_id" required>
+                                            <select class="form-select" id="kategori" name="id_kategori" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
                                                 <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
@@ -141,34 +166,36 @@ $data_menu = $db->query($tabel_data_query);
                                             <label for="namaMenu" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Nama Menu
                                             </label>
-                                            <input type="text" class="form-control" id="namaMenu" name="nama_menu" required placeholder="Masukan Nama Menu">
+                                            <input type="text" class="form-control" id="namaMenu" name="nama_menu_baru" required placeholder="Masukan Nama Menu">
                                         </div>
                                         <div class="mb-3">
                                             <label for="harga" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Harga Menu
                                             </label>
-                                            <input type="number" class="form-control" id="harga" name="harga" required placeholder="Masukan Harga Menu">
+                                            <input type="number" class="form-control" id="harga" name="harga_menu" required placeholder="Masukan Harga Menu">
                                         </div>
-                                        <div class="mb-3">
+                                        <div class="mb-4">
                                             <label for="hargaSetengah" class="form-label fw-semibold text-dark">
                                                 Harga 1/2 <span class="fw-light">(Opsional)</span>
                                             </label>
-
                                             <input type="number" class="form-control" id="hargaSetengah" name="harga_setengah" placeholder="Masukan Harga 1/2 Menu">
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Tambah</button>
+                                        <div class="mb-3 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-primary">Tambah</button>
+                                        </div>
                                     </form>
                                 </div>
 
                                 <!-- Form Edit -->
                                 <div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
-                                    <form id="formEdit" method="POST" action="./services/functions/kategori_functions.php">
+                                    <form id="formEdit" method="POST" action="./services/functions/menu_functions.php">
                                         <input type="hidden" name="action" value="edit">
+                                        <input type="hidden" id="id_menu" name="id_menu">
                                         <div class="mb-3">
-                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                            <label for="editKategoriSelect" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>List kategori menu
                                             </label>
-                                            <select class="form-select" id="kategoriEdit" name="kategori_id_edit" required>
+                                            <select class="form-select" id="editKategoriSelect" name="id_kategori" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
                                                 <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
@@ -176,74 +203,78 @@ $data_menu = $db->query($tabel_data_query);
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="menuEditSelect" class="form-label fw-semibold text-dark">
+                                            <label for="editMenuSelect" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Pilih menu yang ingin diubah
                                             </label>
-                                            <select class="form-select" id="menuEditSelect" name="menu_id_edit" required>
+                                            <select class="form-select" id="editMenuSelect" name="id_menu" required>
                                                 <option value="" disabled selected>Pilih menu...</option>
                                                 <!-- Options will be populated via AJAX based on selected category -->
                                             </select>
                                         </div>
-                                        <div class="row mb-3">
-                                            <div class="col-6">
-                                                <label for="namaMenu" class="form-label">Nama Menu</label>
-                                                <input type="text" class="form-control" id="namaMenu" name="nama_menu" required>
-                                            </div>
-                                            <div class="col-6">
-                                                <label for="editNamaMenu" class="form-label">Nama Menu Baru</label>
-                                                <input type="text" class="form-control" id="editNamaMenu" name="edit_nama_menu" required>
-                                            </div>
-
+                                        <div id="editMenuDetails" class="border rounded p-2 mb-3" style="display: none;">
+                                            <p><strong>Nama Menu:</strong> <span id="editNamaMenu"></span></p>
+                                            <p><strong>Harga Menu:</strong> <span id="editHargaMenuDetails"></span></p>
+                                            <p><strong>Harga 1/2:</strong> <span id="editHargaSetengahDetails"></span></p>
                                         </div>
-                                        <div class="row mb-3">
-                                            <div class="col-6">
-                                                <label for="hargaMenu" class="form-label">Harga Menu</label>
-                                                <input type="text" class="form-control" id="hargaMenu" name="harga_menu" required>
-                                            </div>
-                                            <div class="col-6">
-                                                <label for="editHargaMenu" class="form-label">Harga Menu Baru</label>
-                                                <input type="text" class="form-control" id="editHargaMenu" name="edit_harga_menu" required>
-                                            </div>
+                                        <div class="mb-3">
+                                            <label for="namaMenu" class="form-label fw-semibold text-dark">
+                                                Nama Menu
+                                            </label>
+                                            <input type="text" class="form-control" id="namaMenu" name="nama_menu" placeholder="Masukan nama menu baru">
                                         </div>
-                                        <div class="row mb-3">
+                                        <div class="row mb-4">
                                             <div class="col-6">
-                                                <label for="hargaSetengah" class="form-label">Harga 1/2</label>
-                                                <input type="text" class="form-control" id="hargaSetengah" name="harga_setengah" required>
+                                                <label for="editHargaMenu" class="form-label fw-semibold text-dark">
+                                                    Harga menu baru
+                                                </label>
+                                                <input type="number" class="form-control" id="editHargaMenu" name="harga_menu" placeholder="Masukan harga menu baru">
                                             </div>
                                             <div class="col-6">
-                                                <label for="editHargaSetengah" class="form-label">Harga 1/2 Baru</label>
-                                                <input type="text" class="form-control" id="editHargaSetengah" name="edit_harga_setengah" required>
+                                                <label for="editHargaSetengah" class="form-label fw-semibold text-dark">
+                                                    Harga 1/2 baru
+                                                </label>
+                                                <input type="number" class="form-control" id="editHargaSetengah" name="harga_setengah" placeholder="Masukan harga 1/2 baru">
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-warning">Edit</button>
+                                        <div class="mb-3 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-warning">Edit</button>
+                                        </div>
                                     </form>
                                 </div>
 
                                 <!-- Form Delete -->
                                 <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
-                                    <form id="formDelete" method="POST" action="./services/functions/kategori_functions.php">
+                                    <form id="formDelete" method="POST" action="./services/functions/menu_functions.php">
                                         <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" id="id_menu_delete" name="id_menu">
                                         <div class="mb-3">
-                                            <label for="namaKategori" class="form-label fw-semibold text-dark">
+                                            <label for="deleteKategoriSelect" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>List kategori menu
                                             </label>
-                                            <select class="form-select" id="kategoriDelete" name="kategori_id_delete" required>
+                                            <select class="form-select" id="deleteKategoriSelect" name="id_kategori" required>
                                                 <option value="" disabled selected>Pilih kategori...</option>
                                                 <?php foreach ($list_kategori as $kat) { ?>
                                                     <option value="<?= $kat['id_kategori'] ?>"><?= $kat['nama_kategori'] ?></option>
                                                 <?php } ?>
                                             </select>
                                         </div>
-                                        <div class="mb-3">
-                                            <label for="menuDeleteSelect" class="form-label fw-semibold text-dark">
+                                        <div class="mb-4">
+                                            <label for="deleteMenuSelect" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Pilih menu yang ingin dihapus
                                             </label>
-                                            <select class="form-select" id="menuDeleteSelect" name="menu_id_delete" required>
+                                            <select class="form-select" id="deleteMenuSelect" name="id_menu" required>
                                                 <option value="" disabled selected>Pilih menu...</option>
                                                 <!-- Options will be populated via AJAX based on selected category -->
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                        <div id="deleteMenuDetails" class="border rounded p-2 mb-3" style="display: none;">
+                                            <p><strong>Nama Menu:</strong> <span id="deleteNamaMenu"></span></p>
+                                            <p><strong>Harga Menu:</strong>Rp <span id="deleteHargaMenuDetails"></span></p>
+                                            <p><strong>Harga 1/2:</strong>Rp <span id="deleteHargaSetengahDetails"></span></p>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -260,6 +291,7 @@ $data_menu = $db->query($tabel_data_query);
     <?php include "includes/script.php"; ?>
     <script>
         $(document).ready(function() {
+            /* Load Data tables */
             $('#myTable').DataTable({
                 language: {
                     searchPlaceholder: "Cari menu", // Add placeholder to search box
@@ -269,7 +301,93 @@ $data_menu = $db->query($tabel_data_query);
                     }
                 }
             });
+
+            /* Form select options */
+            // detect edit and delete button input
+            $('#editKategoriSelect').change(function() {
+                updateMenuOptions.call(this, '#editMenuSelect');
+            });
+
+            $('#deleteKategoriSelect').change(function() {
+                updateMenuOptions.call(this, '#deleteMenuSelect');
+            });
+
+            function updateMenuOptions(selectId) {
+                var kategori_id = $(this).val();
+                var targetMenuSelect = $(selectId);
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'menu.php',
+                    data: {
+                        action: 'get_menu_by_category',
+                        kategori_id: kategori_id
+                    },
+                    success: function(response) {
+                        targetMenuSelect.html(response);
+                    }
+                });
+            }
+
+            /* Show selected detail menu and enable delete and edit button */
+            // detect edit and delete button input
+            $('#editMenuSelect').change(function() {
+                updateMenuDetails('edit');
+                enableDisableButton('edit');
+            });
+            $('#deleteMenuSelect').change(function() {
+                updateMenuDetails('delete');
+                enableDisableButton('delete');
+            });
+
+            function enableDisableButton(formType) {
+                var selectedOption = formType === 'edit' ? $('#editMenuSelect').val() : $('#deleteMenuSelect').val();
+                var button = formType === 'edit' ? $('#formEdit button[type="submit"]') : $('#formDelete button[type="submit"]');
+
+                if (selectedOption === 'no_item' || selectedOption === '') {
+                    button.prop('disabled', true)
+                } else {
+                    button.prop('disabled', false)
+                }
+            }
+
+            function updateMenuDetails(formType) {
+                var menu_id = formType === 'edit' ? $('#editMenuSelect').val() : $('#deleteMenuSelect').val();
+                if (menu_id && menu_id !== 'no_item') {
+                    $.ajax({
+                        type: 'POST',
+                        url: 'menu.php', // Make sure this matches your backend file path
+                        data: {
+                            action: 'get_menu_details',
+                            menu_id: menu_id
+                        },
+                        success: function(response) {
+                            var data = JSON.parse(response);
+                            if (formType === 'edit') {
+                                $('#editMenuDetails').show();
+                                $('#editNamaMenu').text(data.nama_menu);
+                                $('#editHargaMenuDetails').text(data.harga_menu);
+                                $('#editHargaSetengahDetails').text(data.harga_setengah || '-');
+                            } else if (formType === 'delete') {
+                                $('#deleteMenuDetails').show();
+                                $('#deleteNamaMenu').text(data.nama_menu);
+                                $('#deleteHargaMenuDetails').text(data.harga_menu);
+                                $('#deleteHargaSetengahDetails').text(data.harga_setengah || '-');
+                            }
+                        }
+                    });
+                } else {
+                    if (formType === 'edit') {
+                        $('#editMenuDetails').hide();
+                    } else if (formType === 'delete') {
+                        $('#deleteMenuDetails').hide();
+                    }
+                }
+            }
+
         });
+
+
         document.addEventListener("DOMContentLoaded", function() {
             // Generic SweetAlert confirmation function
             function confirmAction(e, actionType, message, formId) {

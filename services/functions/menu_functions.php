@@ -1,16 +1,59 @@
 <?php
 require_once("../../config/database.php");
 
-function addMenu($db, $id_kategori, $nama_menu, $harga_menu, $harga_setengah = null) {
+function addMenu($db, $id_kategori, $nama_menu, $harga_menu, $harga_setengah) {
+    $query = "INSERT INTO menu (kategori_id_kategori, nama_menu, harga_menu, harga_setengah) VALUES (?, ?, ?, ?)";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("isdd", $id_kategori, $nama_menu, $harga_menu, $harga_setengah);
     
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function editMenu($db, $id_kategori) {
+function editMenu($db, $id_menu, $id_kategori, $nama_menu, $harga_menu, $harga_setengah) {
+    if ($nama_menu != null && $harga_menu == null && $harga_setengah == null) {
+        // edit nama menu
+        $query = "UPDATE menu SET nama_menu = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("sii", $nama_menu, $id_menu, $id_kategori);
+    } else if ($nama_menu == null && $harga_menu != null && $harga_setengah == null) {
+        // edit harga menu
+        $query = "UPDATE menu SET harga_menu = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("dii", $harga_menu, $id_menu, $id_kategori);
+    } else if ($nama_menu == null && $harga_menu == null && $harga_setengah != null) {
+        // edit harga 1/2
+        $query = "UPDATE menu SET harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("dii", $harga_setengah, $id_menu, $id_kategori);
+    } else {
+        // edit nama, harga, harga 1/2
+        $query = "UPDATE menu SET nama_menu = ?, harga_menu = ?, harga_setengah = ? WHERE id_menu = ? AND kategori_id_kategori = ?";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param("sddii", $nama_menu, $harga_menu, $harga_setengah, $id_menu, $id_kategori);
+    }
     
+
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
-function deleteMenu($db, $id_menu) {
-    
+function deleteMenu($db,  $id_menu) {
+    $query = "DELETE FROM menu WHERE id_menu = ?";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("i", $id_menu);
+
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -20,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($action == 'tambah') {
         $id_kategori = $_POST['id_kategori'];
-        $nama_menu = $_POST['nama_menu'];
+        $nama_menu = $_POST['nama_menu_baru'];
         $harga_menu = $_POST['harga_menu'];
-        $harga_setengah = isset($_POST['harga_setengah']) ? $_POST['harga_setengah'] : null; 
-        
-        if (addMenu($db, $id_kategori, $nama_menu, $harga_menu, $harga_setengah = null)) {
+        $harga_setengah = !empty($_POST['harga_setengah']) ? $_POST['harga_setengah'] : 0; 
+    
+        if (addMenu($db, $id_kategori, $nama_menu, $harga_menu, $harga_setengah)) {
             $status = 'success';
         }
         $tipe = 'tambah';
@@ -46,6 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $tipe = 'delete';
     }
 
-    header("Location: /kategori.php?status=$status&tipe=$tipe");
+    header("Location: /menu.php?status=$status&tipe=$tipe");
     exit();
 } 

@@ -24,14 +24,6 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
 <head>
     <?php include "includes/head.php"; ?>
     <style>
-        @media (max-width: 1156px) {
-            .btn-custom-spacing {
-                margin-bottom: 0.5rem;
-                display: flex;
-                justify-content: center;
-            }
-        }
-
         .tab-content.card {
             margin-top: -1rem;
             border-top: none;
@@ -116,13 +108,15 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                 <div class="tab-pane fade show active" id="tambah" role="tabpanel" aria-labelledby="tambah-tab">
                                     <form id="formTambah" method="POST" action="./services/functions/kategori_functions.php">
                                         <input type="hidden" name="action" value="tambah">
-                                        <div class="mb-3">
+                                        <div class="mb-4">
                                             <label for="namaKategori" class="form-label fw-semibold text-dark">
                                                 <span class="text-danger">*</span>Nama kategori
                                             </label>
                                             <input type="text" class="form-control" id="namaKategori" name="nama_kategori" placeholder="Masukan Nama Kategori baru" required>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Tambah</button>
+                                        <div class="mb-3 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-primary">Tambah</button>
+                                        </div>
                                     </form>
                                 </div>
 
@@ -146,7 +140,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                             </label>
                                             <input type="text" class="form-control" id="namaKategoriEdit" name="nama_kategori_baru" required placeholder="Masukan Nama kategori baru">
                                         </div>
-                                        <button type="submit" class="btn btn-warning">Edit</button>
+                                        <div class="mb-4 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-warning">Edit</button>
+                                        </div>
                                     </form>
                                 </div>
 
@@ -164,7 +160,9 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                                 <?php } ?>
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                        <div class="mb-4 d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -191,6 +189,7 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                 }
             });
         });
+        
         document.addEventListener("DOMContentLoaded", function() {
             // Generic SweetAlert confirmation function
             function confirmAction(e, actionType, message, formId) {
