@@ -2,17 +2,6 @@
 require_once("../../config/database.php");
 session_start();
 
-/**
- * Fungsi untuk memperbarui data user
- * 
- * @param string $username Username pengguna yang akan diperbarui
- * @param string $email Email pengguna yang baru
- * @param string $password Password pengguna yang baru
- * @param string $whatsapp_number Nomor WhatsApp pengguna yang baru
- * @param string $store_address Alamat toko pengguna yang baru
- * @param object $db Koneksi database
- * @return bool True jika berhasil, false jika gagal
- */
 function updateUserData($username, $email, $password, $whatsapp_number, $store_address, $db) {
     $update_query = "UPDATE admin_depot SET email_admin = ?, password = ?, whatsapp_number = ?, store_address = ? WHERE username = ?";
     $stmt = $db->prepare($update_query);

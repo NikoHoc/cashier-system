@@ -9,9 +9,9 @@ if ($currentPage == 'index.php') {
     $pageTittle = "Pesanan";
 } else if ($currentPage == 'riwayat.php') {
     $pageTittle = "Riwayat Penjualan";
-} else if ($currentPage = "kategori.php"){
+} else if ($currentPage == "kategori.php"){
     $pageTittle = "Daftar Kategori";
-} else if ($currentPage = "user.php"){
+} else if ($currentPage == "user.php"){
     $pageTittle = "User";
 } else {
     $pageTittle = "Unknown Page";

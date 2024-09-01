@@ -48,8 +48,22 @@ $stmt->close();
             <main class="content px-3 py-4">
                 <div class="container-fluid card p-4">
                     <div class="row">
-                        <div class="col-lg-6"></div>
+                        <div class="col-lg-6 text-center mt-5">
+
+                            <div class="col-12 mb-5">
+                                <img src="./assets/images/logo_sapi.png" class="border rounded w-50 me-5" alt="...">
+                            </div>
+                            <form class="col-12 ">
+                                <div class="form-group">
+                                    <label for="exampleFormControlFile1">Gambar Foto Profile</label>
+                                    <input type="file" class="form-control-file" id="exampleFormControlFile1">
+                                </div>
+                            </form>
+
+
+                        </div>
                         <div class="col-lg-6">
+                            <h4 class="mb-3">Kelola Data User</h4>
                             <!-- Form Modifikasi -->
                             <form id="userForm" method="POST" action="./services/functions/user_functions.php">
                                 <!-- Username (tetap disabled) -->
