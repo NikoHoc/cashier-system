@@ -65,7 +65,7 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                             <div class="table-responsive">
                                 <table id="myTable" class="table table-hover table-bordered">
                                     <thead>
-                                        <tr class="table-primary">
+                                        <tr class="table-dark">
                                             <th class="fw-bold" scope="col">No</th>
                                             <th class="fw-bold" scope="col">ID Kategori</th>
                                             <th class="fw-bold" scope="col">Nama kategori</th>
@@ -75,7 +75,7 @@ if (isset($_GET['status']) && isset($_GET['tipe'])) {
                                         <?php
                                         $no = 1;
                                         foreach ($list_kategori as $kat) { ?>
-                                            <tr>
+                                            <tr class="table-info">
                                                 <td><?= $no++ ?></td>
                                                 <td><?= $kat['id_kategori'] ?></td>
                                                 <td><?= $kat['nama_kategori'] ?></td>

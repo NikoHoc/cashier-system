@@ -1,24 +1,23 @@
 <?php
-// Get the current file name to determine which page is active
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 if ($currentPage == 'index.php') {
     $pageTittle = "Admin Dashboard";
-} elseif ($currentPage == 'menu.php') {
+} else if ($currentPage == 'menu.php') {
     $pageTittle = "Daftar Menu";
-} elseif ($currentPage == 'order.php') {
-    $pageTittle = "Order";
-} elseif ($currentPage == 'riwayat.php') {
+} else if ($currentPage == 'order.php') {
+    $pageTittle = "Pesanan";
+} else if ($currentPage == 'riwayat.php') {
     $pageTittle = "Riwayat Penjualan";
 } else if ($currentPage = "kategori.php"){
     $pageTittle = "Daftar Kategori";
+} else if ($currentPage = "user.php"){
+    $pageTittle = "User";
 } else {
     $pageTittle = "Unknown Page";
 }
 
-
 $username = $_SESSION['username'] ?? 'Guest';
-$username = preg_replace('/@gmail\.com$/', '', $username);
 ?>
 
 <nav class="navbar navbar-expand px-4 py-3">

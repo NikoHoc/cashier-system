@@ -116,9 +116,9 @@ a.sidebar-link:hover {
 
 /* Highlight active link */
 .sidebar-link.active {
-    background-color: rgba(59, 125, 221, 0.3); /* Adjust color as needed */
-    border-left: 3px solid #3b7ddd; /* Same as hover border */
-    font-weight: bold; /* Optional: Make the text bold */
+    background-color: #0E2238; 
+    border-left: 3px solid #3b7ddd; 
+    font-weight: bold;
 }
 
 .navbar {

@@ -9,10 +9,10 @@ if (isset($_SESSION['is_login']) && $_SESSION['is_login']) {
 }
 
 if (isset($_POST['login'])) {
-  $username = $_POST['email'];
+  $username = $_POST['username'];
   $password = $_POST['password'];
 
-  $select_admin_query = "SELECT * FROM admin_depot WHERE email_admin='$username' AND password = '$password'";
+  $select_admin_query = "SELECT * FROM admin_depot WHERE username='$username' AND password = '$password'";
 
   $select_admin = $db->query($select_admin_query);
 
@@ -20,7 +20,7 @@ if (isset($_POST['login'])) {
     $admin = $select_admin->fetch_assoc();
 
     $_SESSION['is_login'] = true;
-    $_SESSION['username'] = $admin['email_admin'];
+    $_SESSION['username'] = $admin['username'];
 
     echo "<script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -74,13 +74,13 @@ if (isset($_POST['login'])) {
               </div>
             <?php endif; ?>
 
-            <form method="POST" action="">
+            <form method="POST" action="login.php">
               <div class="mb-3">
                 <div class="input-group">
                   <span class="input-group-text bg-light">
                     <i class="fas fa-user"></i>
                   </span>
-                  <input type="email" class="form-control" name="email" placeholder="Email" required>
+                  <input type="text" class="form-control" name="username" placeholder="Username" required>
                 </div>
               </div>
               <div class="mb-3">

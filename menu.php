@@ -8,10 +8,20 @@ if ($_SESSION['is_login'] == false) {
 ?>
 
 <?php
-/* Data untuk form */
-// Data kategori
+/* Data kategori untuk form */
 $kategori_query = "SELECT * FROM kategori";
 $list_kategori = $db->query($kategori_query);
+
+/* detail data di form */
+if (isset($_POST['action']) && $_POST['action'] === 'get_menu_details') {
+    $menu_id = $_POST['menu_id'];
+    $menu_query = mysqli_query($db, "SELECT nama_menu, harga_menu, harga_setengah FROM menu WHERE id_menu = $menu_id");
+
+    $menu_data = mysqli_fetch_assoc($menu_query);
+
+    echo json_encode($menu_data);
+    exit;
+}
 
 // Cek jika ini adalah permintaan AJAX untuk mendapatkan menu berdasarkan kategori
 if (isset($_POST['action']) && $_POST['action'] === 'get_menu_by_category') {
@@ -34,19 +44,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_menu_by_category') {
 }
 ?>
 
-<?php
-/* detail data di form */
-if (isset($_POST['action']) && $_POST['action'] === 'get_menu_details') {
-    $menu_id = $_POST['menu_id'];
-    $menu_query = mysqli_query($db, "SELECT nama_menu, harga_menu, harga_setengah FROM menu WHERE id_menu = $menu_id");
-
-    $menu_data = mysqli_fetch_assoc($menu_query);
-
-    echo json_encode($menu_data);
-    exit;
-}
-
-?>
 
 <?php
 /* data untuk tabel */
@@ -54,9 +51,7 @@ $tabel_data_query = "SELECT id_menu, nama_kategori, nama_menu, harga_menu, harga
                     FROM menu INNER JOIN kategori ON kategori_id_kategori = id_kategori 
                     ORDER BY id_kategori";
 
-
 $data_menu = $db->query($tabel_data_query);
-
 ?>
 
 <!DOCTYPE html>
@@ -106,7 +101,7 @@ $data_menu = $db->query($tabel_data_query);
                             <div class="table-responsive">
                                 <table id="myTable" class="table table-hover table-bordered">
                                     <thead>
-                                        <tr class="table-primary">
+                                        <tr class="table-dark">
                                             <th class="fw-bold" scope="col">ID Menu</th>
                                             <th class="fw-bold" scope="col">Nama Kategori</th>
                                             <th class="fw-bold" scope="col">Nama Menu</th>
@@ -117,7 +112,7 @@ $data_menu = $db->query($tabel_data_query);
                                     <tbody>
                                         <?php
                                         foreach ($data_menu as $menu) { ?>
-                                            <tr>
+                                            <tr class="table-info">
                                                 <td><?= $menu['id_menu'] ?></td>
                                                 <td><?= $menu['nama_kategori'] ?></td>
                                                 <td><?= $menu['nama_menu'] ?></td>
@@ -127,6 +122,15 @@ $data_menu = $db->query($tabel_data_query);
                                         <?php }
                                         ?>
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -297,8 +301,32 @@ $data_menu = $db->query($tabel_data_query);
                     searchPlaceholder: "Cari menu", // Add placeholder to search box
                     paginate: {
                         previous: "<", // Use "<" for previous button
-                        next: ">" // Use ">" for next button
+                        next: ">", // Use ">" for next button
                     }
+                },
+
+                initComplete: function() {
+                    this.api().columns([1,]).every( function() {
+                            let column = this;
+
+                            // Create select element
+                            let select = document.createElement('select');
+                            select.add(new Option(''));
+                            column.footer().replaceChildren(select);
+
+                            // Apply listener for user change in value
+                            select.addEventListener('change', function() {
+                                column.search(select.value, {
+                                    exact: true
+                                }).draw();
+                            });
+
+                            // Add list of options
+                            column.data().unique().sort().each(function(d, j) {
+                                select.add(new Option(d));
+
+                            });
+                        });
                 }
             });
 
@@ -445,7 +473,7 @@ $data_menu = $db->query($tabel_data_query);
                     title: 'Berhasil!',
                     text: message
                 });
-            } else if (status !== 'error') { // If status is not empty and not success, then it's a failure
+            } else if (status !== '') { // If status is not empty and not success, then it's a failure
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',

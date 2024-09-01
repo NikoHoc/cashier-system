@@ -43,7 +43,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </a>
     </li>
     <li class="sidebar-item">
-        <a href="#" class="sidebar-link">
+        <a href="user.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'user.php') ? 'active' : ''; ?>">
             <i class="lni lni-cog"></i>
             <span class="fs-6 ms-2">User</span>
         </a>
