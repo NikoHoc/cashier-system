@@ -35,7 +35,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_menu_by_category') {
             echo '<option value="' . $row_menu['id_menu'] . '">' . $row_menu['nama_menu'] . '</option>';
         }
     } else {
-
         $selected_kategori = mysqli_fetch_array($selected_kategori_query);
         echo '<option value="" disabled selected>Pilih menu...</option>';
         echo '<option value="no_item">Tidak ada menu di kategori ' . $selected_kategori['nama_kategori'] . '</option>';

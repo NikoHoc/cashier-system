@@ -21,6 +21,7 @@ if (isset($_POST['login'])) {
 
     $_SESSION['is_login'] = true;
     $_SESSION['username'] = $admin['username'];
+    $_SESSION['id_admin'] = $admin['id_admin'];
 
     echo "<script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -30,7 +31,9 @@ if (isset($_POST['login'])) {
                     icon: 'success',
                     confirmButtonText: 'OK'
                 }).then(function() {
-                    window.location = 'index.php';
+                    setTimeout(function() {
+                        window.location = 'index.php';
+                    }, 100);
                 });
             });
         </script>";

@@ -49,19 +49,20 @@ $stmt->close();
                 <div class="container-fluid card p-4">
                     <div class="row">
                         <div class="col-lg-6 text-center mt-5">
-
                             <div class="col-12 mb-5">
-                                <img src="./assets/images/logo_sapi.png" class="border rounded w-50 me-5" alt="...">
+                                <img src="<?= isset($user_data['profile_pic']) ? './uploads/profile_pics/' . htmlspecialchars($user_data['profile_pic']) : './assets/images/default-pic.png' ?>" 
+                                class="w-50 me-5" alt="Profile Picture">
                             </div>
-                            <form class="col-12 ">
+                            <form class="col-12" method="POST" action="./services/functions/profile.php" enctype="multipart/form-data">
                                 <div class="form-group">
-                                    <label for="exampleFormControlFile1">Gambar Foto Profile</label>
-                                    <input type="file" class="form-control-file" id="exampleFormControlFile1">
+                                    
+                                    <input type="file" class="form-control-file" id="profilePic" name="profile_pic">
+                                    <button type="submit" name="upload" class="btn btn-primary mt-3">Upload Foto</button>
                                 </div>
+                                
                             </form>
-
-
                         </div>
+
                         <div class="col-lg-6">
                             <h4 class="mb-3">Kelola Data User</h4>
                             <!-- Form Modifikasi -->

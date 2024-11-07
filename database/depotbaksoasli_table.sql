@@ -23,14 +23,15 @@ USE `depotbaksoasli`;
 CREATE TABLE IF NOT EXISTS `admin_depot` (
   `id_admin` int NOT NULL AUTO_INCREMENT,
   `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `email_admin` varchar(255) NOT NULL,
+  `email_admin` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `password` varchar(255) NOT NULL,
-  `whatsapp_number` varchar(50) NOT NULL,
-  `store_address` varchar(255) NOT NULL,
+  `whatsapp_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `store_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `photo` text,
   PRIMARY KEY (`id_admin`),
   UNIQUE KEY `email_admin` (`email_admin`),
   UNIQUE KEY `username` (`username`,`email_admin`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -57,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `kategori` (
   `nama_kategori` varchar(255) NOT NULL,
   PRIMARY KEY (`id_kategori`),
   UNIQUE KEY `nama_kategori` (`nama_kategori`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `menu` (
   UNIQUE KEY `nama_menu` (`nama_menu`),
   KEY `menu_kategori_fk` (`kategori_id_kategori`),
   CONSTRAINT `menu_kategori_fk` FOREIGN KEY (`kategori_id_kategori`) REFERENCES `kategori` (`id_kategori`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
