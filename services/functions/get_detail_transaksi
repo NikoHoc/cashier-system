@@ -1,0 +1,43 @@
+<?php
+require_once("../../config/database.php");
+
+if (isset($_GET['id_transaksi'])) {
+    $idTransaksi = intval($_GET['id_transaksi']); 
+
+    $queryTransaksi = "SELECT * FROM transaksi WHERE id_transaksi = $idTransaksi";
+    $resultTransaksi = $conn->query($queryTransaksi);
+
+    $queryDetail = "SELECT * FROM detail_transaksi WHERE transaksi_id_transaksi = $idTransaksi";
+    $resultDetail = $conn->query($queryDetail);
+
+    if ($resultTransaksi->num_rows > 0) {
+        $transaksi = $resultTransaksi->fetch_assoc();
+
+        echo "<h6>Transaksi #{$transaksi['id_transaksi']}</h6>";
+        echo "<p>Admin: {$transaksi['admin_id_admin']}</p>";
+        echo "<p>Tanggal: {$transaksi['tanggal_transaksi']}</p>";
+        echo "<p>Tipe Order: {$transaksi['tipe_order']}</p>";
+        echo "<p>No Meja: {$transaksi['no_meja']}</p>";
+        echo "<p>Status: {$transaksi['status_transaksi']}</p>";
+        echo "<hr><h6>Detail Pesanan:</h6>";
+        if ($resultDetail->num_rows > 0) {
+            echo "<ul>";
+            while ($detail = $resultDetail->fetch_assoc()) {
+                echo "<li>";
+                echo "{$detail['nama_menu']} ({$detail['jumlah']}x) - Rp " . number_format($detail['harga_menu'], 0, ',', '.');
+                echo "<br>Total: Rp " . number_format($detail['total_harga_detail'], 0, ',', '.');
+                echo "<br>Keterangan: {$detail['keterangan']}";
+                echo "</li>";
+            }
+            echo "</ul>";
+        } else {
+            echo "<p>Belum ada detail transaksi.</p>";
+        }
+        echo "<p>Subtotal: Rp " . number_format($transaksi['subtotal_harga'], 0, ',', '.') . "</p>";
+        echo "<p>Pajak: Rp " . number_format($transaksi['pajak'], 0, ',', '.') . "</p>";
+        echo "<p>Total: Rp " . number_format($transaksi['total_harga'], 0, ',', '.') . "</p>";
+    } else {
+        echo "<p class='text-danger'>Data transaksi tidak ditemukan.</p>";
+    }
+}
+?>
