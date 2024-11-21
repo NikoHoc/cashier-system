@@ -25,6 +25,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </a>
     </li>
     <li class="sidebar-item">
+        <a href="nota.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'nota.php') ? 'active' : ''; ?>">
+            <i class="lni lni-agenda"></i>
+            <span class="fs-6 ms-2">Nota</span>
+        </a>
+    </li>
+    <li class="sidebar-item">
         <a href="kategori.php" class="nav-item nav-link sidebar-link <?php echo ($currentPage == 'kategori.php') ? 'active' : ''; ?>">
             <i class="lni lni-layers"></i>
             <span class="fs-6 ms-2">Kategori</span>

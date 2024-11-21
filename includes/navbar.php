@@ -7,6 +7,8 @@ if ($currentPage == 'index.php') {
     $pageTittle = "Daftar Menu";
 } else if ($currentPage == 'order.php') {
     $pageTittle = "Pesanan";
+} else if ($currentPage == "nota.php"){
+    $pageTittle = "Nota";
 } else if ($currentPage == 'riwayat.php') {
     $pageTittle = "Riwayat Penjualan";
 } else if ($currentPage == "kategori.php"){

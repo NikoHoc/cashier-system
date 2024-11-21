@@ -24,40 +24,59 @@ if (isset($_POST['id_transaksi'])) {
     $transaksi = $resultTransaksi->fetch_assoc();
 
     $queryDetail = "SELECT dt.*, m.nama_menu, m.harga_menu FROM detail_transaksi dt JOIN menu m ON dt.menu_id_menu = m.id_menu
-            WHERE dt.transaksi_id_transaksi = $id_transaksi";
+                WHERE dt.transaksi_id_transaksi = $id_transaksi";
     $resultDetail = $db->query($queryDetail);
 
-    echo "<p><strong>ID Transaksi:</strong> " . $transaksi['id_transaksi'] . "</p>";
-    echo "<p><strong>Tanggal Transaksi:</strong> " . $transaksi['tanggal_transaksi'] . "</p>";
-    echo "<p><strong>Tipe Order:</strong> " . $transaksi['tipe_order'] . "</p>";
-    echo "<p><strong>No Meja:</strong> " . ($transaksi['no_meja'] ?? '-') . "</p>";
+    // Buat HTML konten modal
+    $response = "<p><strong>ID Transaksi:</strong> " . $transaksi['id_transaksi'] . "</p>";
+    $response .= "<p><strong>Tanggal Transaksi:</strong> " . $transaksi['tanggal_transaksi'] . "</p>";
+    $response .= "<p><strong>Tipe Order:</strong> " . $transaksi['tipe_order'] . "</p>";
+    $response .= "<p><strong>No Meja:</strong> " . ($transaksi['no_meja'] ?? '-') . "</p>";
 
     if ($resultDetail->num_rows > 0) {
-      echo "<h5>Item Pesanan</h5>";
-      echo "<table class='table table-striped'>";
-      echo "<thead>";
-      echo "<tr><th>Nama Menu</th><th>Harga</th><th>Jumlah</th><th>Total Harga</th></tr>";
-      echo "</thead>";
-      echo "<tbody>";
+      $response .= "<h5>Item Pesanan</h5>";
+      $response .= "<table class='table table-striped'>";
+      $response .= "<thead>";
+      $response .= "<tr><th>Nama Menu</th><th>Harga</th><th>Jumlah</th><th>Total Harga</th></tr>";
+      $response .= "</thead>";
+      $response .= "<tbody>";
       while ($detail = $resultDetail->fetch_assoc()) {
-        echo "<tr>";
-        echo "<td>" . $detail['nama_menu'] . "</td>";
-        echo "<td>" . number_format($detail['harga_menu'], 0, ',', '.') . "</td>";
-        echo "<td>" . $detail['jumlah'] . "</td>";
-        echo "<td>" . number_format($detail['total_harga'], 0, ',', '.') . "</td>";
-        echo "</tr>";
+        $response .= "<tr>";
+        $response .= "<td>" . $detail['nama_menu'] . "</td>";
+        $response .= "<td>" . number_format($detail['harga_menu'], 0, ',', '.') . "</td>";
+        $response .= "<td>" . $detail['jumlah'] . "</td>";
+        $response .= "<td>" . number_format($detail['total_harga'], 0, ',', '.') . "</td>";
+        $response .= "</tr>";
       }
-      echo "</tbody>";
-      echo "</table>";
+      $response .= "</tbody>";
+      $response .= "</table>";
     } else {
-      echo "<p class='text-muted'>Tidak ada item pada transaksi ini.</p>";
+      $response .= "<p class='text-muted'>Tidak ada item pada transaksi ini.</p>";
     }
-    echo "<p><strong>Subtotal Harga:</strong> " . number_format($transaksi['subtotal_harga'], 0, ',', '.') . "</p>";
-    echo "<p><strong>Pajak:</strong> " . number_format($transaksi['pajak'], 0, ',', '.') . "</p>";
-    echo "<p><strong>Total Harga:</strong> " . number_format($transaksi['total_harga'], 0, ',', '.') . "</p>";
+    $response .= "<p><strong>Subtotal Harga:</strong> " . number_format($transaksi['subtotal_harga'], 0, ',', '.') . "</p>";
+    $response .= "<p><strong>Pajak:</strong> " . number_format($transaksi['pajak'], 0, ',', '.') . "</p>";
+    $response .= "<p><strong>Total Harga:</strong> " . number_format($transaksi['total_harga'], 0, ',', '.') . "</p>";
+
+    echo $response;
   } else {
     echo "<p class='text-danger'>Data transaksi tidak ditemukan.</p>";
   }
+  exit; // Hentikan script di sini
+}
+?>
+
+<?php
+if (isset($_POST['update_status_transaksi'])) {
+  $id_transaksi = intval($_POST['update_status_transaksi']);
+
+  // Query untuk mengupdate status_transaksi
+  $queryUpdate = "UPDATE transaksi SET status_transaksi = 1 WHERE id_transaksi = $id_transaksi";
+  if ($db->query($queryUpdate)) {
+    echo "Status transaksi berhasil diperbarui.";
+  } else {
+    echo "Gagal memperbarui status transaksi: " . $db->error;
+  }
+  exit; // Hentikan script di sini
 }
 ?>
 
@@ -237,10 +256,12 @@ if (isset($_POST['id_transaksi'])) {
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-success" id="btnSelesai" data-id-transaksi="">Selesai</button>
               </div>
             </div>
           </div>
         </div>
+
       </main>
 
       <!-- Main Content -->
@@ -251,9 +272,13 @@ if (isset($_POST['id_transaksi'])) {
 
   <?php include "includes/script.php"; ?>
   <script>
+    // buka modal
     document.querySelectorAll('button[data-bs-target="#detailTransaksiModal"]').forEach(button => {
       button.addEventListener('click', function() {
         const idTransaksi = this.value;
+
+        // Set atribut data-id-transaksi pada tombol "Selesai"
+        document.getElementById('btnSelesai').setAttribute('data-id-transaksi', idTransaksi);
 
         // Kirim data ke PHP menggunakan AJAX
         fetch('order.php', {
@@ -271,6 +296,40 @@ if (isset($_POST['id_transaksi'])) {
             console.error('Error:', error);
           });
       });
+    });
+
+    // update transaksi
+    document.getElementById('btnSelesai').addEventListener('click', function() {
+      const idTransaksi = this.getAttribute('data-id-transaksi');
+
+      if (!idTransaksi) {
+        console.error('ID transaksi tidak ditemukan!');
+        return;
+      }
+
+      // Kirim data ke PHP menggunakan AJAX
+      fetch('order.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `update_status_transaksi=${idTransaksi}`
+        })
+        .then(response => response.text())
+        .then(data => {
+          // Tampilkan notifikasi sukses atau error
+          alert(data);
+
+          // Tutup modal setelah pembaruan berhasil
+          const modal = bootstrap.Modal.getInstance(document.getElementById('detailTransaksiModal'));
+          modal.hide();
+
+          // Reload halaman untuk melihat perubahan (opsional)
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     });
     $(document).ready(function() {
       <?php foreach ($list_kategori as $kat) { ?>
